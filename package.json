@@ -4,17 +4,16 @@
   "description": "mycli-test",
   "main": "index.js",
   "bin": {
-    "node-cli": "index.js"
+    "cyy-cli": "index.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/chenyaoyi88/cyy-cli"
+    "url": "git+https://github.com/chenyaoyi88/cyy-cli"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {    
-  },
+  "dependencies": {},
   "keywords": [
     "mycli-test"
   ],
