@@ -1,0 +1,21 @@
+{
+  "name": "cyy-cli",
+  "version": "1.0.0",
+  "description": "mycli-test",
+  "main": "index.js",
+  "bin": {
+    "node-cli": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mycli-test"
+  ],
+  "author": "cyy",
+  "license": "MIT"
+}
