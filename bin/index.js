@@ -20,9 +20,9 @@ var installConfig = require('./../lib/installConfig');
 var checkVersion = require('./../lib/check-version');
 
 var rootPath = __dirname.replace(/(bin)|(lib)/, '');
+console.log('rootPath', rootPath);
 var templatePath = rootPath + 'template/';
 var nowPath = process.cwd();
-
 
 function printHelp() {
 	console.log('帮助信息');
@@ -76,7 +76,8 @@ function nameInit() {
  */
 function createFn() {
 	// 初始化类型和路径
-	var type = 'web', path = '';
+	var type = 'web',
+		path = '';
 	if (configTemp.appType === 'app') {
 		// 选择类型为app时
 
@@ -102,22 +103,26 @@ function createFn() {
  * @param {string} path - 路径 
  */
 function createTemplate(type, path) {
-	fs.readFile(templatePath + path + '/index.html', function (err, buffer) {
-		if (err) throw err;
 
-		var spinner = ora('   正在生产... ').start();
-		console.log(' ');
-		console.log('templatePath', templatePath);
-		console.log(nowPath + '\\' + configTemp.appType + '/');
-		fsp.copy(templatePath + path + '/', nowPath + '\\' + configTemp.appType + '/')
-			.then(function() {
-				fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
-			}).then(function() {
-				fsp.writeFile(nowPath + '\\' + configTemp.appType + '/index.html', 'gb2312');
-			}).then(function() {
-				spinner.stop();
-				console.log('');
-				ora(chalk.green('目录生成成功')).succeed();
-			})
-	});
+	console.log(' ');
+	console.log('type', type);
+	console.log('path', path);
+	console.log('templatePath', templatePath);
+	console.log('nowPath+', nowPath + '\\' + configTemp.appType + '/');
+
+	// fs.readFile(templatePath + path + '/index.html', function (err, buffer) {
+	// 	if (err) throw err;
+
+	var spinner = ora('   正在生产... ').start();
+	fsp.copy(templatePath + path + '/', nowPath + '\\' + configTemp.appType + '/')
+		.then(function () {
+			fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
+		}).then(function () {
+			// fsp.writeFile(nowPath + '\\' + configTemp.appType + '/index.html', 'gb2312');
+		}).then(function () {
+			spinner.stop();
+			console.log('');
+			ora(chalk.green('目录生成成功')).succeed();
+		})
+	// });
 }
