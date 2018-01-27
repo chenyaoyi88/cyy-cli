@@ -23,5 +23,3 @@ cnpm install cyy-cli -g
 ```
 cyy-cli
 ```
-
-如果

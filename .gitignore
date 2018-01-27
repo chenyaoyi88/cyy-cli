@@ -1,6 +1,5 @@
 node_modules/
 .git
-* text eol=lf
 
 # 生成的目录
 app
