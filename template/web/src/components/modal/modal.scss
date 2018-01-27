@@ -1,0 +1,104 @@
+@import '../index.scss';
+@import './modal.animate.scss';
+
+// 模态框最小高度
+$modal-wrap-min-height: px2vw(770);
+// 模态框宽度
+$modal-wrap-width: px2vw(680);
+// 模态框内容宽度
+$modal-text-wrap-height: px2vw(620);
+
+// 弹窗
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  .modal-wrap {
+    width: $modal-wrap-width;
+    // min-height: $modal-wrap-min-height;
+    margin-top: px2vw(-206);
+    background-color: #fff;
+    position: relative;
+    z-index: 22;
+    border-radius: 5px;
+  }
+  .modal-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 21;
+  }
+}
+
+// 弹窗主显示区域
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  // 弹窗主内容显示区域
+  .modal-text-wrap {
+    padding: px2vw(30);
+    height: $modal-text-wrap-height;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+  // 弹窗主内容按钮区域
+  .modal-btn-wrap {
+    flex: 1;
+    margin-bottom: px2vw(60);
+  }
+}
+
+// 弹窗主内容显示区域
+.modal-text-wrap {
+  .modal-img-wrap {
+    // 图片
+    max-width: px2vw(450);
+  }
+  .modal-text {
+    font-size: px2vw(35);
+    font-weight: bold;
+    color: #fc3252;
+    line-height: 1.5;
+  }
+  .text-gray {
+    margin-top: px2vw(5);
+    font-size: px2vw(28);
+    color: #999999;
+  }
+}
+
+// 确定按钮
+.modal-btn-wrap {
+  display: flex;
+  justify-content: center;
+  .modal-btn {
+    width: px2vw(600);
+    height: px2vw(90);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: px2vw(40);
+    color: #fff;
+    background: #ffb600;
+    border-radius: px2vw(45);
+    user-select: none;
+    border: none;
+    outline: none;
+    &:active {
+      background-color: rgb(240, 172, 0);
+    }
+  }
+}
