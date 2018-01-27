@@ -106,6 +106,9 @@ function createTemplate(type, path) {
 		if (err) throw err;
 
 		var spinner = ora('   正在生产... ').start();
+		console.log(' ');
+		console.log('templatePath', templatePath);
+		console.log(nowPath + '\\' + configTemp.appType + '/');
 		fsp.copy(templatePath + path + '/', nowPath + '\\' + configTemp.appType + '/')
 			.then(function() {
 				fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
