@@ -85,7 +85,7 @@ function createFn() {
 		// 路径
 		path = 'app';
 		createTemplate(type, path);
-	} else if (configTemp === 'web') {
+	} else if (configTemp.appType === 'web') {
 		// 选择类型为web时
 
 		// 类型 
