@@ -7,7 +7,7 @@
     "start": "node bin/index.js"
   },
   "bin": {
-    "cyy-cli": "bin/index.js"
+    "cyy": "bin/index.js"
   },
   "author": "cyy",
   "repository": {

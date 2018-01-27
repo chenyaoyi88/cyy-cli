@@ -44,8 +44,10 @@ checkVersion(function () {
 
 	// 选择项目的类型，是'web'还是'app'
 	inquirer.prompt(installConfig.type).then(function (args) {
-		assignConfig(args, true);
-		// nameInit();
+		// 选中的项：{ appType: 'web' }
+		console.log('args', args); 
+		assignConfig(args);
+		nameInit();
 	})
 });
 
