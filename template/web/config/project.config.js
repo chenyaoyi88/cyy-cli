@@ -1,7 +1,4 @@
-const config = require('../config.json');
-
 module.exports = {
-    NAME: config.appName,
     OUTPUT: '/',
     PATH: {
         DEV: '../dev/',

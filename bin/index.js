@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const inquirer = require('inquirer');
 const program = require('commander');
 const Promise = require("bluebird");
@@ -55,8 +53,9 @@ checkVersion(function () {
 function nameInit() {
 	// 选择相应的专题名称
 	inquirer.prompt(installConfig.nameInit).then(function (args) {
-		assignConfig(args);
-		authorInit();
+		assignConfig(args, true);
+		// assignConfig(args);
+		// authorInit();
 	})
 }
 /**
@@ -64,7 +63,7 @@ function nameInit() {
  */
 function authorInit() {
 	inquirer.prompt(installConfig.authorInit).then(function (args) {
-		console.log('args', args);
+		// console.log('args', args);
 		assignConfig(args, true);
 	})
 };
@@ -77,7 +76,7 @@ function authorInit() {
  */
 function assignConfig(args, flag) {
 	configTemp = Object.assign(configTemp, args);
-	console.log('configTemp', configTemp);
+	// console.log('configTemp', configTemp);
 	if (flag) {
 		createFn();
 	}
@@ -117,9 +116,6 @@ function createFn() {
  */
 function createTemplate(type, typePath) {
 
-	// fs.readFile(templatePath + typePath + '/index.html', function (err, buffer) {
-	// 	if (err) throw err;
-
 	// 当前目录
 	const sorceDir = path.join(templatePath, typePath);
 	/**
@@ -135,27 +131,30 @@ function createTemplate(type, typePath) {
 	console.log('选择类型目录名称', typePath);
 	console.log('选择类型的模板位置', sorceDir);
 	console.log('要复制到的目录', copyDirTo);
+	console.log(' ');
 
-	const spinner = ora('   正在生产... ').start();
+	const spinner = ora('正在生产... ').start();
 
 	console.log(' ');
 	// 复制模板目录
 	fsp.copy(sorceDir, copyDirTo)
 		.then(function () {
-			console.log(chalk.green('模板文件复制成功'));
-			// fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
+			// console.log(chalk.green('模板文件复制成功'));
 		}).then(function () {
-			const configFile = path.join(copyDirTo, 'config.json');
-			fs.writeFileSync(configFile, `
-			{
-				"appName": "${configTemp.appName}"
-			}
-			`);
+			// const configFile = path.join(copyDirTo, 'config.json');
+			// fs.writeFileSync(configFile, `
+			// {
+			// 	"appName": "${configTemp.appName}",
+			// 	"title": "${configTemp.appName}",
+			// 	"description": "${configTemp.appName}",
+			// 	"keywords": "${configTemp.appName}"
+			// }
+			// `);
 			// console.log(data);
 		}).then(function () {
 			spinner.stop();
 			console.log('');
-			ora(chalk.green('目录生成成功')).succeed();
+			ora(chalk.green('项目模板生成成功')).succeed();
 		});
 	// });
 }
