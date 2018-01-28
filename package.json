@@ -1,7 +1,7 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.11",
-  "description": "cyy-cli demo",
+  "version": "1.0.12",
+  "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
     "start": "node bin/index.js"
