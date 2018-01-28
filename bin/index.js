@@ -1,28 +1,27 @@
 #!/usr/bin/env node
 
-var inquirer = require('inquirer');
-var program = require('commander');
-var Promise = require("bluebird");
-var fs = Promise.promisifyAll(require('fs-extra'));
-var chalk = require('chalk');
-var figlet = require('figlet');
-var ora = require('ora');
-var exec = require('promise-exec');
-var clone = require('git-clone');
-var shell = require('shelljs');
-var fsp = require('fs-promise');
-
-// var log = require('tracer').colorConsole();
+const inquirer = require('inquirer');
+const program = require('commander');
+const Promise = require("bluebird");
+const fs = Promise.promisifyAll(require('fs-extra'));
+const chalk = require('chalk');
+const figlet = require('figlet');
+const ora = require('ora');
+const exec = require('promise-exec');
+const clone = require('git-clone');
+const shell = require('shelljs');
+const fsp = require('fs-promise');
+const path = require('path');
 
 // 定义一个对象，用于合并数据
-var configTemp = {};
-var installConfig = require('./../lib/installConfig');
-var checkVersion = require('./../lib/check-version');
+let configTemp = {};
+const installConfig = require('./../lib/installConfig');
+const checkVersion = require('./../lib/check-version');
 
-var rootPath = __dirname.replace(/(bin)|(lib)/, '');
+const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 console.log('rootPath', rootPath);
-var templatePath = rootPath + 'template/';
-var nowPath = process.cwd();
+const templatePath = rootPath + 'template/';
+const nowPath = process.cwd();
 
 function printHelp() {
 	console.log('帮助信息');
@@ -45,86 +44,118 @@ checkVersion(function () {
 	// 选择项目的类型，是'web'还是'app'
 	inquirer.prompt(installConfig.type).then(function (args) {
 		// 选中的项：{ appType: 'web' }
-		console.log('args', args); 
 		assignConfig(args);
 		nameInit();
 	})
 });
 
 /**
- * @description 合并数据，如果flag为true，则进行文件的创建
- * @param {Object} args 
+ * 专题名称
+ */
+function nameInit() {
+	// 选择相应的专题名称
+	inquirer.prompt(installConfig.nameInit).then(function (args) {
+		assignConfig(args);
+		authorInit();
+	})
+}
+/**
+ * 作者名
+ */
+function authorInit() {
+	inquirer.prompt(installConfig.authorInit).then(function (args) {
+		console.log('args', args);
+		assignConfig(args, true);
+	})
+};
+
+/**
+ * 合并数据，创建模版
+ * 
+ * @param {any} args 传过来要合并的创建所需参数
+ * @param {any} flag 如果flag为true，则进行文件的创建
  */
 function assignConfig(args, flag) {
 	configTemp = Object.assign(configTemp, args);
-
+	console.log('configTemp', configTemp);
 	if (flag) {
 		createFn();
 	}
 }
 
 /**
- * @description 专题名称
- */
-function nameInit() {
-	// 选择相应的专题名称
-	inquirer.prompt(installConfig.nameInit).then(function (args) {
-		assignConfig(args);
-	})
-}
-
-/**
- * @description 创建初始化文件
+ * 创建初始化文件
  */
 function createFn() {
 	// 初始化类型和路径
-	var type = 'web',
-		path = '';
+	let type = 'web',
+		typePath = '';
 	if (configTemp.appType === 'app') {
 		// 选择类型为app时
 
 		// 类型 
 		type = 'app';
 		// 路径
-		path = 'app';
-		createTemplate(type, path);
+		typePath = 'app';
+		createTemplate(type, typePath);
 	} else if (configTemp.appType === 'web') {
 		// 选择类型为web时
 
 		// 类型 
 		type = 'web';
 		// 路径
-		path = 'web';
-		createTemplate(type, path);
+		typePath = 'web';
+		createTemplate(type, typePath);
 	}
 }
 
 /**
- * @description 创建模版
- * @param {string} type - 类型 
- * @param {string} path - 路径 
+ * 创建模版
+ * 
+ * @param {any} type 模版类型 app/web
+ * @param {any} typePath 
  */
-function createTemplate(type, path) {
+function createTemplate(type, typePath) {
 
-	console.log(' ');
-	console.log('type', type);
-	console.log('path', path);
-	console.log('templatePath', templatePath);
-	console.log('nowPath+', nowPath + '\\' + configTemp.appType + '/');
-
-	// fs.readFile(templatePath + path + '/index.html', function (err, buffer) {
+	// fs.readFile(templatePath + typePath + '/index.html', function (err, buffer) {
 	// 	if (err) throw err;
 
-	var spinner = ora('   正在生产... ').start();
-	fsp.copy(templatePath + path + '/', nowPath + '\\' + configTemp.appType + '/')
+	// 当前目录
+	const sorceDir = path.join(templatePath, typePath);
+	/**
+	 * 要复制到的目录
+	 * @param {string} nowPath 复制到的目录
+	 * @param {string} configTemp.appName 输入的项目名
+	 * 输入出来的路径大概是：你命令行的当前位置\输入的项目名
+	 */
+	const copyDirTo = path.join(nowPath, configTemp.appName);
+
+	console.log(' ');
+	console.log('选择类型', type);
+	console.log('选择类型目录名称', typePath);
+	console.log('选择类型的模板位置', sorceDir);
+	console.log('要复制到的目录', copyDirTo);
+
+	const spinner = ora('   正在生产... ').start();
+
+	console.log(' ');
+	// 复制模板目录
+	fsp.copy(sorceDir, copyDirTo)
 		.then(function () {
-			fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
+			console.log(chalk.green('模板文件复制成功'));
+			// fsp.ensureDir(nowPath + '\\' + configTemp.appType + '');
 		}).then(function () {
-			// fsp.writeFile(nowPath + '\\' + configTemp.appType + '/index.html', 'gb2312');
+			const configFile = path.join(copyDirTo, 'config.json');
+			fs.writeFileSync(configFile, `
+			{
+				"appName": "${configTemp.appName}"
+			}
+			`);
+			// console.log(data);
 		}).then(function () {
 			spinner.stop();
 			console.log('');
 			ora(chalk.green('目录生成成功')).succeed();
-		})
+		});
 	// });
 }

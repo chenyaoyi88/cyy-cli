@@ -1,5 +1,7 @@
+const config = require('../config.json');
+
 module.exports = {
-    NAME: 'h5-webpack',
+    NAME: config.appName,
     OUTPUT: '/',
     PATH: {
         DEV: '../dev/',
