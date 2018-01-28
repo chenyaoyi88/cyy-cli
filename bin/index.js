@@ -17,7 +17,7 @@ const installConfig = require('./../lib/installConfig');
 const checkVersion = require('./../lib/check-version');
 
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
-console.log('rootPath', rootPath);
+// console.log('rootPath', rootPath);
 const templatePath = rootPath + 'template/';
 const nowPath = process.cwd();
 

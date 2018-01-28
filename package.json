@@ -1,13 +1,13 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "cyy-cli demo",
   "main": "index.js",
   "scripts": {
     "start": "node bin/index.js"
   },
   "bin": {
-    "cyy": "bin/index.js"
+    "cyy-cli": "bin/index.js"
   },
   "author": "cyy",
   "repository": {
