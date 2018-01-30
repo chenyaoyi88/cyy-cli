@@ -1,0 +1,9 @@
+{
+    "appName": "${configTemp.appName}",
+    "author": "${configTemp.author}",
+    "createTime": {
+        "year": "${oDate.getFullYear()}",
+        "month": "${oDate.getMonth()+1}",
+        "date": "${oDate.getDate()}"
+    }
+}
