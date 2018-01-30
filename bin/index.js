@@ -19,8 +19,7 @@ const installConfig = require('./../lib/installConfig');
 const checkVersion = require('./../lib/check-version');
 
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
-// console.log('rootPath', rootPath);
-const templatePath = rootPath + 'template/';
+const templatePath =  path.join(rootPath, 'template');
 const nowPath = process.cwd();
 
 function printHelp() {
@@ -123,9 +122,9 @@ function createFn() {
       // 选择类型为app时
 
       // 类型
-      type = 'app';
+      type = 'm';
       // 路径
-      typePath = 'app';
+      typePath = 'm';
       createTemplate(type, typePath);
       break;
     case 'PC端':
@@ -134,7 +133,7 @@ function createFn() {
       // 类型
       type = 'pc';
       // 路径
-      typePath = 'web';
+      typePath = 'pc';
       createTemplate(type, typePath);
       break;
     default:
@@ -144,7 +143,7 @@ function createFn() {
 /**
  * 创建模版
  *
- * @param {any} type 模版类型 app/web
+ * @param {any} type 模版类型 m/pc
  * @param {any} typePath
  */
 function createTemplate(type, typePath) {
