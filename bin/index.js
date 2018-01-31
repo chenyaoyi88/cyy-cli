@@ -3,26 +3,23 @@
 const inquirer = require('inquirer');
 const program = require('commander');
 const Promise = require('bluebird');
-const fs = Promise.promisifyAll(require('fs-extra'));
 const chalk = require('chalk');
 const figlet = require('figlet');
 const ora = require('ora');
 const exec = require('promise-exec');
-const clone = require('git-clone');
 const shell = require('shelljs');
-const fsp = require('fs-promise');
 const path = require('path');
-
-// 定义一个对象，用于合并数据
-let configTemp = {};
 const installConfig = require('./../lib/installConfig');
 const checkVersion = require('./../lib/check-version');
-const utils = require('./../lib/utils');
+const templateRepoUrl = require('./repo.json');
+const flow = require('./index.flow');
 
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const templatePath = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
+// 定义一个对象，用于合并数据
+let configTemp = {};
 
 function printHelp() {
   console.log('帮助信息');
@@ -35,62 +32,46 @@ program.on('--help', printHelp);
 program.parse(process.argv);
 
 checkVersion(function () {
+  // 显示 cli 签名
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  // 选择项目的类型，是'web'还是'app'
-  inquirer.prompt(installConfig.appType).then(function (args) {
-    // 选中的项：{ appType: 'web' }
-    assignConfig(args);
-    switch (configTemp.appType) {
-      case '移动端':
-        mTypeInit();
-        break;
-      case 'PC端':
-        pcTypeInit();
-        break;
-      default:
-        mTypeInit();
-    }
-  });
+  // 用户选择
+  appInit(installConfig.appType)
+    // 第一步：类型 PC/移动 端
+    .then(() => {
+      // 第二步：选择 PC/移动端 的具体类型模版
+      switch (configTemp.appType) {
+        case '移动端':
+          return appInit(installConfig.mType);
+          break;
+        case 'PC端':
+          return appInit(installConfig.pcType);
+          break;
+      }
+    })
+    // 第三步：输入项目名称
+    .then(() => {
+      return appInit(installConfig.nameInit);
+    })
+    // 第四步：输入开发人员名称
+    .then(() => {
+      return appInit(installConfig.authorInit, true);
+    })
+    .catch((err) => {
+      console.log(chalk.red('执行错误', err));
+    });
 });
 
 /**
- * 选择相应的 移动端 类型
+ * 选择相应的类型
+ *
+ * @param {any} type 选择类型 json
+ * @param {any} isDone 是否完成全部选择
+ * @returns {Promise} 返回 Promise 继续回调
  */
-function mTypeInit() {
-  inquirer.prompt(installConfig.mType).then(function (args) {
-    assignConfig(args);
-    nameInit();
-  });
-}
-
-/**
- * 选择相应的 pc端 类型
- */
-function pcTypeInit() {
-  inquirer.prompt(installConfig.pcType).then(function (args) {
-    assignConfig(args);
-    nameInit();
-  });
-}
-
-/**
- * 专题名称
- */
-function nameInit() {
-  // 选择相应的专题名称
-  inquirer.prompt(installConfig.nameInit).then(function (args) {
-    assignConfig(args);
-    authorInit();
-  });
-}
-
-/**
- * 作者名
- */
-function authorInit() {
-  inquirer.prompt(installConfig.authorInit).then(function (args) {
-    assignConfig(args, true);
+function appInit(type, isDone) {
+  return inquirer.prompt(type).then(function (args) {
+    assignConfig(args, isDone);
   });
 }
 
@@ -102,9 +83,7 @@ function authorInit() {
  */
 function assignConfig(args, flag) {
   configTemp = Object.assign(configTemp, args);
-  if (flag) {
-    createFn();
-  }
+  flag && createFn();
 }
 
 /**
@@ -117,13 +96,13 @@ function createFn() {
 
   switch (configTemp.appType) {
     case '移动端':
-      // 选择类型为 m端 时  
+      // 选择类型为 m端 时
       switch (configTemp.mType) {
         case '专题':
-          createTemplate('act', 'm');
+          readyToCreateTemplate('m', 'act');
           break;
         case '前端SPA':
-          createTemplate('spa', 'm');
+          readyToCreateTemplate('m', 'spa');
           break;
       }
       break;
@@ -131,13 +110,13 @@ function createFn() {
       // 选择类型为 PC端 时
       switch (configTemp.pcType) {
         case '专题':
-          createTemplate('act', 'pc');
+          readyToCreateTemplate('pc', 'act');
           break;
         case '前端SPA':
-          createTemplate('spa', 'pc');
+          readyToCreateTemplate('pc', 'spa');
           break;
         case '服务端express':
-          createTemplate('express', 'pc');
+          readyToCreateTemplate('pc', 'express');
           break;
       }
       break;
@@ -148,11 +127,11 @@ function createFn() {
  * 创建模版
  *
  * @param {any} type 模版类型appType m/pc
- * @param {any} typePath  具体类型 act/spa/express
+ * @param {any} typePath  具体类型 act/spa/express 
  */
-function createTemplate(type, typePath) {
+function readyToCreateTemplate(type, typePath) {
   // 当前目录
-  const sorceDir = path.join(templatePath, typePath, type);
+  const sorceDir = path.join(templatePath, type, typePath);
   /**
    * 要复制到的目录
    * @param {string} currentDir 当前Node.js进程执行时的工作目录
@@ -160,103 +139,78 @@ function createTemplate(type, typePath) {
    * 输入出来的路径大概是：你命令行的当前位置\输入的项目名
    */
   const copyDirTo = path.join(currentDir, configTemp.appName);
+  // 仓库地址
+  const repoDir = templateRepoUrl[type][typePath];
+
+  // console.log(' ');
+  // console.log('选择类型的模板位置', sorceDir);
+  // console.log('要复制到的目录', copyDirTo);
+  // console.log(' ');
+
+  let spinner = null;
 
   console.log(' ');
-  console.log('选择类型的模板位置', sorceDir);
-  console.log('要复制到的目录', copyDirTo);
-  console.log(' ');
-
-  const spinner = ora('正在生产... ').start();
-
-  console.log(' ');
-  // 复制模板目录
-  fsp
-    .copy(sorceDir, copyDirTo)
-    .then(function () {
-      // console.log(chalk.green('模板文件复制成功'));
-    })
-    .then(function () {
-      return fsp.readdir(copyDirTo, function (err, files) {
-        if (err) return console.log('读取文件夹失败', err);
-        files.forEach((file) => {
-          if (file.includes('config.json')) {
-            // 有 config.json 修改
-            configFileModify(copyDirTo, configTemp, 'config.json')
-          } else {
-            // 没有 config.json 写入一个
-            configFileWrite(copyDirTo, configTemp, 'config.json');
-          }
-        });
-      });
-    })
-    .then(function () {
-      spinner.stop();
-      console.log('');
-      ora(chalk.green('项目模板生成成功')).succeed();
-    });
-  // });
+  createTemplate({
+    copyDirTo: copyDirTo,
+    sorceDir: sorceDir,
+    repoDir: repoDir,
+    configTemp: configTemp
+  });
+  
+  // createTemplate()
+  //   .then(() => {
+  //     spinner = ora('正在生成项目模板... ').start();
+  //     return flow.deleteFile(sorceDir);
+  //   })
+  //   .then(() => {
+  //     spinner.succeed(chalk.green('删除旧模板成功'));
+  //     spinner = ora('使用 git clone 获取最新项目模板... ').start();
+  //     return flow.cloneFileFromGit(templateRepoUrl[type][typePath], sorceDir);
+  //   })
+  //   .then(() => {
+  //     spinner.succeed(chalk.green('获取新模板成功'));
+  //     spinner = ora('复制模版到您当前目录下... ').start();
+  //     return flow.copyFile(sorceDir, copyDirTo);
+  //   })
+  //   .then(() => {
+  //     spinner.succeed(chalk.green('复制新模板成功'));
+  //     return flow.setConfigFile(copyDirTo, configTemp);
+  //   })
+  //   .then(() => {
+  //     spinner.succeed(chalk.green('项目信息写入成功'));
+  //   })
+  //   .catch((err) => {
+  //     spinner.fail('操作失败');
+  //     console.log(err);
+  //   });
 }
 
-/**
- * 写入 config.json
- * 
- * @param {any} dir 目标文件夹
- * @param {any} json 写入信息
- * @param {any} fileName 写入的文件名
- */
-function configFileWrite(dir, json, fileName) {
-  const configFile = path.join(dir, fileName);
-  const oDate = new Date();
-  fsp.writeFileSync(configFile, `
-  {
-    "appName": "${json.appName}",
-    "author": "${json.author}",
-    "createTime": {
-        "year": "${oDate.getFullYear()}",
-        "month": "${oDate.getMonth()+1}",
-        "date": "${oDate.getDate()}"
-    }
+// function createTemplate() {
+//   return new Promise((resolve, reject) => {
+//     resolve();
+//   });
+// }
+
+async function createTemplate(opt) {
+  const options = opt || {};
+  const copyDirTo = options.copyDirTo;
+  const sorceDir = options.sorceDir;
+  const repoDir = options.repoDir;
+  const configTemp = options.configTemp;
+  try {
+    spinner = ora('正在生成项目模板... ').start();
+    await flow.deleteFile(sorceDir);
+    spinner.succeed(chalk.green('删除旧模板成功'));
+    spinner = ora('使用 git clone 获取最新项目模板... ').start();
+    await flow.cloneFileFromGit(repoDir, sorceDir);
+    spinner.succeed(chalk.green('获取新模板成功'));
+    spinner = ora('复制模版到您当前目录下... ').start();
+    await flow.copyFile(sorceDir, copyDirTo);
+    spinner.succeed(chalk.green('复制新模板成功'));
+    await flow.setConfigFile(copyDirTo, configTemp);
+    spinner.succeed(chalk.green('项目信息写入成功'));
+  } catch (err) {
+    spinner.fail('操作失败');
+    console.log(err);
   }
-  `);
-}
-
-/**
- * 修改 config.json
- * 
- * @param {any} dir 目标文件夹
- * @param {any} json 写入信息
- * @param {any} fileName 写入的文件名
- */
-function configFileModify(dir, json, fileName) {
-  const configFile = path.join(dir, fileName);
-  const str = fsp.readFileSync(configFile, 'utf-8');
-  const strNew = utils.replaceHtml(configFileModifyInfo(json), str);
-  fsp.writeFileSync(configFile, strNew, 'utf-8');
-}
-
-/**
- * 匹配修改配置
- * 
- * @param {any} json 对象
- * @returns {string} 返回新的匹配修改后的字符串
- */
-function configFileModifyInfo(json) {
-  const oDate = new Date();
-  const aRegInfo = [{
-    reg: /"(\s)?appName(\s)?"(\s)?:(\s)?".*"/,
-    text: `"appName": "${json.appName}"`
-  }, {
-    reg: /"(\s)?author(\s)?"(\s)?:(\s)?".*"/,
-    text: `"author": "${json.author}"`
-  }, {
-    reg: /"(\s)?year(\s)?"(\s)?:(\s)?".*"/,
-    text: `"year": "${oDate.getFullYear()}"`
-  }, {
-    reg: /"(\s)?month(\s)?"(\s)?:(\s)?".*"/,
-    text: `"month": "${oDate.getMonth()+1}"`
-  }, {
-    reg: /"(\s)?date(\s)?"(\s)?:(\s)?".*"/,
-    text: `"date": "${oDate.getDate()}"`
-  }];
-  return aRegInfo;
 }

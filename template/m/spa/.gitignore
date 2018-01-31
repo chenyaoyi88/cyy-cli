@@ -1,0 +1,10 @@
+# 打包出来的静态文件
+build
+dist
+manifest.json
+
+# 开发依赖 
+node_modules
+
+# MAC OS存储这个文件夹的显示属性
+.DS_Store

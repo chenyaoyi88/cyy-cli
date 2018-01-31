@@ -1,0 +1,24 @@
+{
+  "name": "cyy-tool",
+  "version": "1.0.8",
+  "description": "cyy-tool",
+  "scripts": {
+    "start": "browser-sync start --server --no-notify --directory --files **/*.css,**/*.js,**/*.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chenyaoyi88/cyy-tool"
+  },
+  "keywords": [
+    "cyy-tool"
+  ],
+  "author": "cyy",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0"
+  },
+  "dependencies": {
+    "n-zepto": "^1.2.0"
+  }
+}
