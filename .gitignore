@@ -30,3 +30,7 @@ Thumbs.db
 
 # 文档 #
 /.docs
+
+# 模板 #
+template/m/*
+template/pc/*
