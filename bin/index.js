@@ -156,41 +156,13 @@ function readyToCreateTemplate(type, typePath) {
     repoDir: repoDir,
     configTemp: configTemp
   });
-  
-  // createTemplate()
-  //   .then(() => {
-  //     spinner = ora('正在生成项目模板... ').start();
-  //     return flow.deleteFile(sorceDir);
-  //   })
-  //   .then(() => {
-  //     spinner.succeed(chalk.green('删除旧模板成功'));
-  //     spinner = ora('使用 git clone 获取最新项目模板... ').start();
-  //     return flow.cloneFileFromGit(templateRepoUrl[type][typePath], sorceDir);
-  //   })
-  //   .then(() => {
-  //     spinner.succeed(chalk.green('获取新模板成功'));
-  //     spinner = ora('复制模版到您当前目录下... ').start();
-  //     return flow.copyFile(sorceDir, copyDirTo);
-  //   })
-  //   .then(() => {
-  //     spinner.succeed(chalk.green('复制新模板成功'));
-  //     return flow.setConfigFile(copyDirTo, configTemp);
-  //   })
-  //   .then(() => {
-  //     spinner.succeed(chalk.green('项目信息写入成功'));
-  //   })
-  //   .catch((err) => {
-  //     spinner.fail('操作失败');
-  //     console.log(err);
-  //   });
 }
 
-// function createTemplate() {
-//   return new Promise((resolve, reject) => {
-//     resolve();
-//   });
-// }
-
+/**
+ * 创建模版
+ * 
+ * @param {any} opt 
+ */
 async function createTemplate(opt) {
   const options = opt || {};
   const copyDirTo = options.copyDirTo;
