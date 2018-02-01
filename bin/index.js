@@ -35,19 +35,11 @@ checkVersion(function () {
   // 显示 cli 签名
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  // 用户选择
+  // 第一步：类型 m/pc 端
   appInit(installConfig.appType)
-    // 第一步：类型 PC/移动 端
+    // 第二步：选择 PC/移动端 的具体类型模版
     .then(() => {
-      // 第二步：选择 PC/移动端 的具体类型模版
-      switch (configTemp.appType) {
-        case '移动端':
-          return appInit(installConfig.mType);
-          break;
-        case 'PC端':
-          return appInit(installConfig.pcType);
-          break;
-      }
+      return appInit(installConfig[configTemp.appType]);
     })
     // 第三步：输入项目名称
     .then(() => {
@@ -83,48 +75,11 @@ function appInit(type, isDone) {
  */
 function assignConfig(args, flag) {
   configTemp = Object.assign(configTemp, args);
-  flag && createFn();
+  flag && readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType])
 }
 
 /**
- * 创建初始化文件
- */
-function createFn() {
-  // console.log(' ');
-  // console.log('configTemp', configTemp);
-  // console.log(' ');
-
-  switch (configTemp.appType) {
-    case '移动端':
-      // 选择类型为 m端 时
-      switch (configTemp.mType) {
-        case '专题':
-          readyToCreateTemplate('m', 'act');
-          break;
-        case '前端SPA':
-          readyToCreateTemplate('m', 'spa');
-          break;
-      }
-      break;
-    case 'PC端':
-      // 选择类型为 PC端 时
-      switch (configTemp.pcType) {
-        case '专题':
-          readyToCreateTemplate('pc', 'act');
-          break;
-        case '前端SPA':
-          readyToCreateTemplate('pc', 'spa');
-          break;
-        case '服务端express':
-          readyToCreateTemplate('pc', 'express');
-          break;
-      }
-      break;
-  }
-}
-
-/**
- * 创建模版
+ * 准备创建模版
  *
  * @param {any} type 模版类型appType m/pc
  * @param {any} typePath  具体类型 act/spa/express 
