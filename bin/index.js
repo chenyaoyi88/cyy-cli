@@ -147,8 +147,6 @@ function readyToCreateTemplate(type, typePath) {
   // console.log('要复制到的目录', copyDirTo);
   // console.log(' ');
 
-  let spinner = null;
-
   console.log(' ');
   createTemplate({
     copyDirTo: copyDirTo,
@@ -169,6 +167,7 @@ async function createTemplate(opt) {
   const sorceDir = options.sorceDir;
   const repoDir = options.repoDir;
   const configTemp = options.configTemp;
+  let spinner = null;
   try {
     spinner = ora('正在生成项目模板... ').start();
     await flow.deleteFile(sorceDir);

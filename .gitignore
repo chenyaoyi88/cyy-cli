@@ -10,12 +10,6 @@ node_modules
 .vscode
 *.swp
 
-# 编译 #
-/dll
-/dev
-/test
-/prod
-
 # Mac #
 .DS_Store
 ehthumbs.db

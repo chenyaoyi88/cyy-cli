@@ -13,7 +13,7 @@ const config_cyycli = 'config.cyycli.json';
  * @param {any} file 要删除的文件位置
  * @returns {Promise} 返回 Promise 继续回调
  */
-exports.deleteFile = function (file) {
+function deleteFile(file) {
     return new Promise((resolve, reject) => {
         rimraf(file, function (err) {
             if (err) {
@@ -33,7 +33,7 @@ exports.deleteFile = function (file) {
  * @param {any} file 克隆出来的文件名
  * @returns 
  */
-exports.cloneFileFromGit = function (repo, file) {
+function cloneFileFromGit(repo, file) {
     return new Promise((resolve, reject) => {
         gitClone(repo, file, function (err) {
             if (err) {
@@ -53,7 +53,7 @@ exports.cloneFileFromGit = function (repo, file) {
  * @param {any} copyDirTo 复制到的位置
  * @returns 
  */
-exports.copyFile = function (sorceDir, copyDirTo) {
+function copyFile(sorceDir, copyDirTo) {
     return fsp.copy(sorceDir, copyDirTo);
 }
 
@@ -64,7 +64,7 @@ exports.copyFile = function (sorceDir, copyDirTo) {
  * @param {any} writeInInfo 写入信息
  * @param {any} configFile config.cyycli.json 文件名
  */
-exports.setConfigFile = function (targetDir, writeInInfo) {
+function setConfigFile(targetDir, writeInInfo) {
     fsp.readdir(targetDir, function (err, files) {
         if (err) {
             console.log('获取文件列表失败');
@@ -170,3 +170,8 @@ function configFileModifyInfo(json) {
         }
     ];
 }
+
+exports.deleteFile = deleteFile;
+exports.cloneFileFromGit = cloneFileFromGit;
+exports.copyFile = copyFile;
+exports.setConfigFile = setConfigFile;
