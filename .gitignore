@@ -1,12 +1,40 @@
-# 忽略所有文件
-*
+# 日志 #
+logs
+*.log
 
-# 除了这个文件
-!.gitignore
-!bin
-!lib
-!pic
-!template
-!LICENSE
-!package.json
-!README.md
+# 依赖包 #
+node_modules
+
+# 开发工具 #
+.idea
+.vscode
+*.swp
+
+# Mac #
+.DS_Store
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+
+# SVN #
+/.svn
+
+# Coverage 测试覆盖率 #
+/.coverage
+
+# 文档 #
+/.docs
+
+# 模板 #
+template/*
