@@ -73,7 +73,7 @@ function readyToCreateTemplate(info) {
     copyDirTo: copyDirTo,
     sorceDir: sorceDir,
     repoDir: repoDir,
-    configTemp: configTemp
+    configTemp: info
   });
 }
 
