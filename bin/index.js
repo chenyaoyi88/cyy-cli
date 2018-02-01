@@ -37,7 +37,7 @@ checkVersion(function () {
 
   // 第一步：类型 m/pc 端
   appInit(installConfig.appType)
-    // 第二步：选择 PC/移动端 的具体类型模版
+    // 第二步：选择各个端的具体类型模版
     .then(() => {
       return appInit(installConfig[configTemp.appType]);
     })
@@ -71,7 +71,7 @@ function appInit(type, isDone) {
  * 合并数据，创建项目模版
  *
  * @param {any} args 传过来要合并的创建所需参数
- * @param {any} flag 如果flag为true，则进行文件的创建
+ * @param {any} flag 如果 flag 为true，则进行文件的创建
  */
 function assignConfig(args, flag) {
   configTemp = Object.assign(configTemp, args);
@@ -79,7 +79,7 @@ function assignConfig(args, flag) {
 }
 
 /**
- * 准备创建模版
+ * 准备好各种路径创建模版
  *
  * @param {any} type 模版类型appType m/pc
  * @param {any} typePath  具体类型 act/spa/express 
@@ -103,6 +103,7 @@ function readyToCreateTemplate(type, typePath) {
   // console.log(' ');
 
   console.log(' ');
+  // 创建模版
   createTemplate({
     copyDirTo: copyDirTo,
     sorceDir: sorceDir,
