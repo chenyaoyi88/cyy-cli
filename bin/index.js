@@ -16,8 +16,6 @@ const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const templatePath = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
-// 定义一个对象，用于合并数据
-let configTemp = {};
 
 function printHelp() {
   console.log('帮助信息');
@@ -73,7 +71,7 @@ function readyToCreateTemplate(info) {
     copyDirTo: copyDirTo,
     sorceDir: sorceDir,
     repoDir: repoDir,
-    configTemp: info
+    info: info
   });
 }
 
@@ -87,7 +85,7 @@ async function createTemplate(opt) {
   const copyDirTo = options.copyDirTo;
   const sorceDir = options.sorceDir;
   const repoDir = options.repoDir;
-  const configTemp = options.configTemp;
+  const info = options.info;
   let spinner = null;
   try {
     spinner = ora('正在生成项目模板... ').start();
@@ -99,7 +97,7 @@ async function createTemplate(opt) {
     spinner = ora('复制模版到您当前目录下... ').start();
     await flow.copyFile(sorceDir, copyDirTo);
     spinner.succeed(chalk.green('复制新模板成功'));
-    await flow.setConfigFile(copyDirTo, configTemp);
+    await flow.setConfigFile(copyDirTo, info);
     spinner.succeed(chalk.green('项目信息写入成功'));
   } catch (err) {
     spinner.fail('操作失败');

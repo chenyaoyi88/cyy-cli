@@ -1,6 +1,6 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
