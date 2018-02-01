@@ -6,8 +6,6 @@ const Promise = require('bluebird');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const ora = require('ora');
-const exec = require('promise-exec');
-const shell = require('shelljs');
 const path = require('path');
 const installConfig = require('./../lib/installConfig');
 const checkVersion = require('./../lib/check-version');
@@ -35,23 +33,13 @@ checkVersion(function () {
   // 显示 cli 签名
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  // 第一步：类型 m/pc 端
-  appInit(installConfig.appType)
-    // 第二步：选择各个端的具体类型模版
-    .then(() => {
-      return appInit(installConfig[configTemp.appType]);
-    })
-    // 第三步：输入项目名称
-    .then(() => {
-      return appInit(installConfig.nameInit);
-    })
-    // 第四步：输入开发人员名称
-    .then(() => {
-      return appInit(installConfig.authorInit, true);
-    })
-    .catch((err) => {
-      console.log(chalk.red('执行错误', err));
-    });
+  inquirer.prompt(installConfig.createInit).then(function (res) {
+    console.log(res);
+    readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType]);
+  });
+
+  // 用户选择+输入
+  // templateInit();
 });
 
 /**
@@ -75,7 +63,10 @@ function appInit(type, isDone) {
  */
 function assignConfig(args, flag) {
   configTemp = Object.assign(configTemp, args);
-  flag && readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType])
+
+  console.log(configTemp);
+
+  flag && readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType]);
 }
 
 /**
@@ -103,6 +94,7 @@ function readyToCreateTemplate(type, typePath) {
   // console.log(' ');
 
   console.log(' ');
+  return;
   // 创建模版
   createTemplate({
     copyDirTo: copyDirTo,
@@ -110,6 +102,25 @@ function readyToCreateTemplate(type, typePath) {
     repoDir: repoDir,
     configTemp: configTemp
   });
+}
+
+/**
+ * 用户选择+输入步骤
+ * 
+ */
+async function templateInit() {
+  try {
+    // 第一步：类型 m/pc 端
+    await appInit(installConfig.appType);
+    // 第二步：选择各个端的具体类型模版
+    await appInit(installConfig[configTemp.appType]);
+    // 第三步：输入项目名称
+    await appInit(installConfig.nameInit);
+    // 第四步：输入开发人员名称
+    await appInit(installConfig.authorInit, true);
+  } catch (err) {
+    console.log(chalk.red('执行错误', err));
+  }
 }
 
 /**
