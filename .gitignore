@@ -1,29 +1,12 @@
-# 日志 #
-logs
-*.log
+# 忽略所有文件
+*
 
-# 依赖包 #
-node_modules
-
-# 开发工具 #
-.idea
-.vscode
-*.swp
-
-# Mac #
-.DS_Store
-ehthumbs.db
-Icon?
-Thumbs.db
-
-# SVN #
-/.svn
-
-# Coverage 测试覆盖率 #
-/.coverage
-
-# 文档 #
-/.docs
-
-# 模板 #
-template/*
+# 除了这个文件
+!.gitignore
+!bin
+!lib
+!pic
+!template
+!LICENSE
+!package.json
+!README.md
