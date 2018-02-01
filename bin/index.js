@@ -34,40 +34,10 @@ checkVersion(function () {
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
   inquirer.prompt(installConfig.createInit).then(function (res) {
-    console.log(res);
-    readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType]);
+    readyToCreateTemplate(res);
   });
-
-  // 用户选择+输入
-  // templateInit();
 });
 
-/**
- * 选择相应的类型
- *
- * @param {any} type 选择类型 json
- * @param {any} isDone 是否完成全部选择
- * @returns {Promise} 返回 Promise 继续回调
- */
-function appInit(type, isDone) {
-  return inquirer.prompt(type).then(function (args) {
-    assignConfig(args, isDone);
-  });
-}
-
-/**
- * 合并数据，创建项目模版
- *
- * @param {any} args 传过来要合并的创建所需参数
- * @param {any} flag 如果 flag 为true，则进行文件的创建
- */
-function assignConfig(args, flag) {
-  configTemp = Object.assign(configTemp, args);
-
-  console.log(configTemp);
-
-  flag && readyToCreateTemplate(configTemp.appType, configTemp[configTemp.appType]);
-}
 
 /**
  * 准备好各种路径创建模版
@@ -75,16 +45,20 @@ function assignConfig(args, flag) {
  * @param {any} type 模版类型appType m/pc
  * @param {any} typePath  具体类型 act/spa/express 
  */
-function readyToCreateTemplate(type, typePath) {
+function readyToCreateTemplate(info) {
+
+  const type = info.plaform;
+  const typePath = info[info.plaform];
+
   // 当前目录
   const sorceDir = path.join(templatePath, type, typePath);
   /**
    * 要复制到的目录
    * @param {string} currentDir 当前Node.js进程执行时的工作目录
-   * @param {string} configTemp.appName 输入的项目名
+   * @param {string} info.appName 输入的项目名
    * 输入出来的路径大概是：你命令行的当前位置\输入的项目名
    */
-  const copyDirTo = path.join(currentDir, configTemp.appName);
+  const copyDirTo = path.join(currentDir, info.appName);
   // 仓库地址
   const repoDir = templateRepoUrl[type][typePath];
 
@@ -94,7 +68,6 @@ function readyToCreateTemplate(type, typePath) {
   // console.log(' ');
 
   console.log(' ');
-  return;
   // 创建模版
   createTemplate({
     copyDirTo: copyDirTo,
@@ -102,25 +75,6 @@ function readyToCreateTemplate(type, typePath) {
     repoDir: repoDir,
     configTemp: configTemp
   });
-}
-
-/**
- * 用户选择+输入步骤
- * 
- */
-async function templateInit() {
-  try {
-    // 第一步：类型 m/pc 端
-    await appInit(installConfig.appType);
-    // 第二步：选择各个端的具体类型模版
-    await appInit(installConfig[configTemp.appType]);
-    // 第三步：输入项目名称
-    await appInit(installConfig.nameInit);
-    // 第四步：输入开发人员名称
-    await appInit(installConfig.authorInit, true);
-  } catch (err) {
-    console.log(chalk.red('执行错误', err));
-  }
 }
 
 /**
