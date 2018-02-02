@@ -29,7 +29,6 @@ function addZero(num) {
     }
 }
 
-
 function resetUserData(arr) {
     let maxLevel = 0;
     const setRepo = function (arr, opt) {
@@ -37,18 +36,17 @@ function resetUserData(arr) {
         for (let i = 0; i < arr.length; i++) {
             arr[i].parentCode = options.parentCode || null;
             arr[i].level = options.level || 0;
-            // if (!options.level) {
-            // 	arr[i].code = arr[i].name;
-            // } else {
-            // 	// arr[i].code = options.parentCode + '>' + arr[i].name;
-            // 	arr[i].code = arr[i].name;
-            // }
+            if (!options.level) {
+                arr[i].code = arr[i].name;
+            } else {
+                arr[i].code = options.parentCode + '>' + arr[i].name;
+            }
             if (arr[i].child && arr[i].child.length) {
                 arr[i].type = 'list';
                 if (maxLevel < arr[i].level) {
                     maxLevel = arr[i].level;
                 }
-                arr[i].message = options.message ? options.message : '请选择' + arr[i].name + '类型';
+                arr[i].message = options.message ? options.message : '请选择' + arr[i].text + '类型';
                 setRepo(arr[i].child, {
                     code: arr[i].code,
                     parentCode: arr[i].name,
@@ -77,7 +75,7 @@ function userDataToinquirerData(fn) {
                 if (arr[i].child && arr[i].child.length) {
                     if (arr[i].parentCode) {
                         arr[i].when = function (res) {
-                            return res[arr[i].parentCode] === arr[i].name;
+                            return res[arr[i].parentCode] === arr[i].text;
                         }
                     }
                     aResetUserData.push(arr[i]);
@@ -95,7 +93,7 @@ function userDataToinquirerData(fn) {
             const aChild = userData.child;
             const choices = [];
             for (let choice of aChild) {
-                choices.push(choice.name);
+                choices.push(choice.text);
             }
             userData.choices = choices;
         }

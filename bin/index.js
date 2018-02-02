@@ -36,10 +36,6 @@ checkVersion(function () {
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
   // inquirer.prompt(installConfig.createInit).then
-  
-  // console.log(installData);
-  // return;
-
   inquirer.prompt(installData).then(function (res) {
     console.log(res);
     return;
