@@ -100,6 +100,6 @@
     {
         "type": "input",
         "name": "author",
-        "message": "请输入作者名"
+        "message": "请输入开发人员名字"
     }
 ]
