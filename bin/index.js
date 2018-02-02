@@ -12,6 +12,10 @@ const checkVersion = require('./../lib/check-version');
 const templateRepoUrl = require('./repo.json');
 const flow = require('./index.flow');
 
+const utils = require('./utils');
+const repo = require('./repo.1.json');
+const installData = utils.getInquirerData(repo);
+
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const templatePath = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
@@ -31,7 +35,14 @@ checkVersion(function () {
   // 显示 cli 签名
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  inquirer.prompt(installConfig.createInit).then(function (res) {
+  // inquirer.prompt(installConfig.createInit).then
+  
+  // console.log(installData);
+  // return;
+
+  inquirer.prompt(installData).then(function (res) {
+    console.log(res);
+    return;
     readyToCreateTemplate(res);
   });
 });

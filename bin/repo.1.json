@@ -1,0 +1,84 @@
+[{
+        "type": "list",
+        "message": "请选择平台类型",
+        "name": "平台",
+        "child": [{
+                "name": "移动端",
+                "child": [{
+                    "name": "单页应用框架",
+                    "child": [{
+                        "name": "react框架",
+                        "url": "m.spa.react.git"
+                    }, {
+                        "name": "angular框架",
+                        "url": "m.spa.angular.git"
+                    }, {
+                        "name": "vue框架",
+                        "url": "m.spa.vue.git",
+                        "child": [{
+                            "name": "vue-cli",
+                            "url": "m.spa.vue.cli.git",
+                            "child": []
+                        }]
+                    }]
+                }, {
+                    "name": "活动",
+                    "child": [{
+                        "name": "普通",
+                        "url": "m.act.normal.git"
+                    }, {
+                        "name": "抽奖",
+                        "url": "m.act.lottery.git"
+                    }]
+                }]
+            },
+            {
+                "name": "PC端",
+                "child": [{
+                    "name": "单页应用框架",
+                    "url": "pc.spa.git",
+                    "child": [{
+                        "name": "react框架",
+                        "url": "pc.spa.react.git"
+                    }, {
+                        "name": "angular框架",
+                        "url": "pc.spa.angular.git"
+                    }, {
+                        "name": "vue框架",
+                        "url": "pc.spa.vue.git"
+                    }]
+                }, {
+                    "name": "活动",
+                    "url": "pc.act.git",
+                    "child": [{
+                        "name": "抽奖",
+                        "url": "pc.act.lottery.git"
+                    }]
+                }]
+            },
+            {
+                "name": "APP端",
+                "child": [{
+                    "name": "RN框架",
+                    "url": "app.rn.git"
+                }, {
+                    "name": "weex框架",
+                    "url": "app.weex.git"
+                }, {
+                    "name": "mui框架",
+                    "url": "app.mui.git"
+                }]
+            }
+        ]
+    },
+    {
+        "type": "input",
+        "name": "appName",
+        "message": "请输入项目名"
+    },
+    {
+        "type": "input",
+        "name": "author",
+        "message": "请输入作者名"
+    }
+]
