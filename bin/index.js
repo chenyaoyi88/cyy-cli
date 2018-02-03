@@ -2,24 +2,22 @@
 
 const inquirer = require('inquirer');
 const program = require('commander');
-const Promise = require('bluebird');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const ora = require('ora');
 const path = require('path');
-const installConfig = require('./../lib/installConfig');
 const checkVersion = require('./../lib/check-version');
 const templateRepoUrl = require('./repo.json');
 const flow = require('./index.flow');
 
-const utils = require('./utils');
-const repo = require('./repo.1.json');
-const installData = utils.getInquirerData(repo);
+const repoConfig = require('./repo.config.json');
+const installData = flow.getInquirerData(repoConfig);
 
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const templatePath = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
+const repoUrl = '';
 
 function printHelp() {
   console.log('帮助信息');
@@ -35,10 +33,9 @@ checkVersion(function () {
   // 显示 cli 签名
   console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  // inquirer.prompt(installConfig.createInit).then
-  inquirer.prompt(installData).then(function (res) {
-    console.log(res);
-    return;
+  inquirer.prompt(installData.question).then(function (res) {
+    console.log('url', flow.findRepoUrl(repoConfig, res));
+    // repoUrl = flow.findRepoUrl(repoConfig, res);
     readyToCreateTemplate(res);
   });
 });

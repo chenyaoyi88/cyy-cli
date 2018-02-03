@@ -12,11 +12,11 @@
                     "child": [{
                         "name": "react",
                         "text": "react框架",
-                        "url": "m.spa.react.git"
+                        "url": "https://github.com/chenyaoyi88/cyy-tool.git"
                     }, {
                         "name": "angular",
                         "text": "angular框架",
-                        "url": "m.spa.angular.git"
+                        "url": "https://github.com/chenyaoyi88/h5-webpack.git"
                     }, {
                         "name": "vue",
                         "text": "vue框架",
@@ -48,7 +48,6 @@
                 "child": [{
                     "name": "spa",
                     "text": "单页应用框架",
-                    "url": "pc.spa.git",
                     "child": [{
                         "name": "react",
                         "text": "react框架",

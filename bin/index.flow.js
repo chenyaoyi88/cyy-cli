@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
-const fs = Promise.promisifyAll(require('fs-extra'));
-const fsp = require('fs-promise');
+const fsp = Promise.promisifyAll(require('fs-extra'));
 const gitClone = require('git-clone');
 const rimraf = require('rimraf');
 const path = require('path');
@@ -171,7 +170,148 @@ function configFileModifyInfo(json) {
     ];
 }
 
+/**
+ * 整理配置文件数据格式，为下一步数据转换添加一些额外属性
+ * 
+ * @param {Array} arr 配置文件原始格式数据
+ * @returns {Object} userData：整理后的数据；maxLevel：数据的最大层级
+ */
+function resetUserData(arr) {
+    let maxLevel = 0;
+    const setRepo = function (arr, opt) {
+        let options = opt || {};
+        for (let i = 0; i < arr.length; i++) {
+            arr[i].parentCode = options.parentCode || null;
+            arr[i].level = options.level || 0;
+            if (!options.level) {
+                arr[i].code = arr[i].name;
+            } else {
+                arr[i].code = options.parentCode + '>' + arr[i].name;
+            }
+            if (arr[i].child && arr[i].child.length) {
+                arr[i].type = 'list';
+                if (maxLevel < arr[i].level) {
+                    maxLevel = arr[i].level;
+                }
+                arr[i].message = options.message ? options.message : '请选择' + arr[i].text + '类型';
+                setRepo(arr[i].child, {
+                    code: arr[i].code,
+                    parentCode: arr[i].name,
+                    level: Number(arr[i].level) + 1
+                });
+            }
+        }
+    }
+    setRepo(arr);
+    return {
+        userData: arr,
+        maxLevel: maxLevel
+    };
+}
+
+/**
+ * 将配置文件的数据转化为 inquirer 适合用的格式
+ * 
+ * @param {any} fn 调用 resetUserData 之后返回的配置文件数据
+ * @returns 得到 inquirer 适合用的数据
+ */
+function userDataToinquirerData(fn) {
+    const obj = fn;
+    const maxLevel = obj.maxLevel;
+    const userData = obj.userData;
+    let aResetUserData = [];
+    let aInquirer = [];
+
+    function userDataLoop(arr) {
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].type === 'list') {
+                if (arr[i].child && arr[i].child.length) {
+                    if (arr[i].parentCode) {
+                        arr[i].when = function (res) {
+                            return res[arr[i].parentCode] === arr[i].text;
+                        }
+                    }
+                    aResetUserData.push(arr[i]);
+                    userDataLoop(arr[i].child);
+                }
+            } else if (arr[i].type === 'input') {
+                arr[i]['validate'] = function (value) {
+                    if (value.length) {
+                        return true;
+                    } else {
+                        return arr[i].message;
+                    }
+                }
+                aResetUserData.push(arr[i]);
+            }
+        }
+    };
+    userDataLoop(userData);
+
+    for (let userData of aResetUserData) {
+        if (userData.child) {
+            const aChild = userData.child;
+            const choices = [];
+            for (let choice of aChild) {
+                choices.push(choice.text);
+            }
+            userData.choices = choices;
+        }
+    }
+
+    return {
+        question: aResetUserData
+    };
+}
+
+/**
+ * 将数据返回出去使用
+ * 
+ * @param {any} arr 配置文件原始格式数据
+ * @returns 最终整理好的 inquirer 所用的数据（就是问题步骤配置）
+ */
+function getInquirerData(arr) {
+    return userDataToinquirerData(resetUserData(arr));
+}
+
+/**
+ * 查找配置文件里面对应的 url 地址（仓库地址）
+ * 
+ * @param {any} arr 配置文件原始格式数据
+ * @param {any} result 最后 inquirer.prompt 得到的选择项对象
+ * @returns 
+ */
+function findRepoUrl(arr, result) {
+    let url = '';
+
+    const findInList = function (list, result) {
+        const aChildList = list;
+        for (let i = 0; i < aChildList.length; i++) {
+            for (let name in result) {
+                if (result[name] === aChildList[i].text) {
+                    if (aChildList[i].url) {
+                        url = aChildList[i].url;
+                    }
+                    if (aChildList[i].child && aChildList[i].child.length) {
+                        findInList(aChildList[i].child, result);
+                    }
+                }
+            }
+        }
+    }
+
+    for (let item of arr) {
+        if (item.child || item.type === 'list') {
+            findInList(item.child, result);
+        }
+    }
+
+    return url;
+}
+
 exports.deleteFile = deleteFile;
 exports.cloneFileFromGit = cloneFileFromGit;
 exports.copyFile = copyFile;
 exports.setConfigFile = setConfigFile;
+exports.getInquirerData = getInquirerData;
+exports.findRepoUrl = findRepoUrl;
