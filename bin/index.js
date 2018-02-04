@@ -3,43 +3,124 @@
 const inquirer = require('inquirer');
 const program = require('commander');
 const chalk = require('chalk');
+// 电子签名
 const figlet = require('figlet');
+// cli 处理标志符号
 const ora = require('ora');
 const path = require('path');
 const checkVersion = require('./../lib/check-version');
-const templateRepoUrl = require('./repo.json');
+// 文件处理流程
 const flow = require('./index.flow');
-
-const repoConfig = require('./repo.config.json');
-const installData = flow.getInquirerData(repoConfig);
-
+// 仓库配置文件
+const repoConfig = require('./../repo/repo.config.json');
+// 仓库配置模版文件
+const repoConfigTemplate = require('./repo.config.json');
+// 整理仓库配置文件数据
+const resetUserData = flow.resetUserData(repoConfig);
+// inquirer 所需数据
+const installData = flow.userDataToinquirerData(resetUserData);
+// 根目录
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
+// 模板目录
 const templatePath = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
-const repoUrl = '';
+// repo目录
+const repoDir = path.join(rootPath, 'repo');
 
-function printHelp() {
-  console.log('帮助信息');
-}
+const fsp = require('fs-extra');
+const utils = require('./utils');
+const packageConfig = require('./../package.json');
 
-program.version(process.version).usage('[options]');
+program.version(packageConfig.version)
+program
+  .command('upload <repo.config.json>')
+  .description('上传你的 repo.config.json 文件')
+  .action(function (file) {
 
-program.on('--help', printHelp);
+    cmdValue = file;
+
+    if (utils.getFileType(file) !== 'json') {
+      console.log('上传的文件名必须是 json 格式');
+      process.exit(1);
+    }
+
+    const uploadRepoFile = path.join(currentDir, file);
+    fsp.stat(uploadRepoFile, function (err, stats) {
+      if (!stats.isFile()) {
+        console.log('上传的文件名必须是 json 格式');
+        process.exit(1);
+      }
+    });
+
+    // 仓库配置文件
+    const repoConfigUpload = path.join(rootPath, 'repo', 'repo.config.json');
+
+    let spinner = ora('配置模版文件中... ').start();
+    fsp.copy(uploadRepoFile, repoConfigUpload)
+      .then(() => {
+        spinner.succeed(chalk.green('配置模版成功'));
+        process.exit(0);
+      })
+      .catch(err => {
+        console.error(err);
+        process.exit(1);
+      });
+
+  });
+
+program
+  .command('download')
+  .description('下载 repo.config.json 模板文件')
+  .action(function () {
+    // 原仓库配置文件
+    const repoConfigSource = path.join(rootPath, 'bin', 'repo.config.json');
+    // 仓库配置文件
+    const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
+    let spinner = ora('下载配置模版文件中... ').start();
+    fsp.copy(repoConfigSource, repoConfigCopyTo)
+      .then(() => {
+        spinner.succeed(chalk.green('下载配置模版文件成功'));
+        process.exit(0);
+      })
+      .catch(err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
+program
+  .command('reset')
+  .description('重置 repo.config.json 模板文件')
+  .action(function () {
+    // 原仓库配置文件
+    const repoConfigSource = path.join(rootPath, 'bin', 'repo.config.json');
+    // 仓库配置文件
+    const repoConfigCopyTo = path.join(rootPath, 'repo', 'repo.config.json');
+    let spinner = ora('重置配置模版文件中... ').start();
+    fsp.copy(repoConfigSource, repoConfigCopyTo)
+      .then(() => {
+        spinner.succeed(chalk.green('重置配置模版文件成功'));
+        process.exit(0);
+      })
+      .catch(err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
 
 program.parse(process.argv);
 
-checkVersion(function () {
-  // 显示 cli 签名
-  console.log(chalk.green(figlet.textSync('CYY CLI')));
+if (typeof cmdValue === 'undefined') {
+  checkVersion(function () {
+    // 显示 cli 签名
+    console.log(chalk.green(figlet.textSync('CYY CLI')));
 
-  inquirer.prompt(installData.question).then(function (res) {
-    console.log('url', flow.findRepoUrl(repoConfig, res));
-    // repoUrl = flow.findRepoUrl(repoConfig, res);
-    readyToCreateTemplate(res);
+    inquirer.prompt(installData.question).then(function (res) {
+      readyToCreateTemplate(res);
+    });
   });
-});
-
+}
 
 /**
  * 准备好各种路径创建模版
@@ -49,20 +130,13 @@ checkVersion(function () {
  */
 function readyToCreateTemplate(info) {
 
-  const type = info.plaform;
-  const typePath = info[info.plaform];
-
-  // 当前目录
-  const sorceDir = path.join(templatePath, type, typePath);
-  /**
-   * 要复制到的目录
-   * @param {string} currentDir 当前Node.js进程执行时的工作目录
-   * @param {string} info.appName 输入的项目名
-   * 输入出来的路径大概是：你命令行的当前位置\输入的项目名
-   */
+  const templateOtherInfo = flow.findResult(resetUserData, info);
+  // 模板目录
+  const sorceDir = path.join(templatePath, templateOtherInfo.rank);
+  // 目标地址
   const copyDirTo = path.join(currentDir, info.appName);
   // 仓库地址
-  const repoDir = templateRepoUrl[type][typePath];
+  const repoDir = templateOtherInfo.url;
 
   // console.log(' ');
   // console.log('选择类型的模板位置', sorceDir);

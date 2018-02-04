@@ -1,5 +1,4 @@
-const Promise = require('bluebird');
-const fsp = Promise.promisifyAll(require('fs-extra'));
+const fsp = require('fs-extra');
 const gitClone = require('git-clone');
 const rimraf = require('rimraf');
 const path = require('path');
@@ -95,15 +94,15 @@ function configFileWrite(dir, json, fileName) {
         fsp.writeFile(
             configFile,
             `
-    {
-      "appName": "${json.appName}",
-      "author": "${json.author}",
-      "createTime": {
-          "year": "${oDate.getFullYear()}",
-          "month": "${oDate.getMonth() + 1}",
-          "date": "${oDate.getDate()}"
-      }
+{
+    "appName": "${json.appName}",
+    "author": "${json.author}",
+    "createTime": {
+        "year": "${oDate.getFullYear()}",
+        "month": "${utils.addZero(oDate.getMonth() + 1)}",
+        "date": "${utils.addZero(oDate.getDate())}"
     }
+}
     `,
             function (err) {
                 if (err) {
@@ -184,9 +183,9 @@ function resetUserData(arr) {
             arr[i].parentCode = options.parentCode || null;
             arr[i].level = options.level || 0;
             if (!options.level) {
-                arr[i].code = arr[i].name;
+                arr[i].rank = arr[i].name;
             } else {
-                arr[i].code = options.parentCode + '>' + arr[i].name;
+                arr[i].rank = options.rank + '_' + arr[i].name;
             }
             if (arr[i].child && arr[i].child.length) {
                 arr[i].type = 'list';
@@ -195,7 +194,7 @@ function resetUserData(arr) {
                 }
                 arr[i].message = options.message ? options.message : '请选择' + arr[i].text + '类型';
                 setRepo(arr[i].child, {
-                    code: arr[i].code,
+                    rank: arr[i].rank,
                     parentCode: arr[i].name,
                     level: Number(arr[i].level) + 1
                 });
@@ -203,24 +202,18 @@ function resetUserData(arr) {
         }
     }
     setRepo(arr);
-    return {
-        userData: arr,
-        maxLevel: maxLevel
-    };
+    return arr;
 }
 
 /**
  * 将配置文件的数据转化为 inquirer 适合用的格式
  * 
- * @param {any} fn 调用 resetUserData 之后返回的配置文件数据
+ * @param {any} data 调用 resetUserData 之后返回的配置文件数据
  * @returns 得到 inquirer 适合用的数据
  */
-function userDataToinquirerData(fn) {
-    const obj = fn;
-    const maxLevel = obj.maxLevel;
-    const userData = obj.userData;
+function userDataToinquirerData(data) {
+    const userData = data;
     let aResetUserData = [];
-    let aInquirer = [];
 
     function userDataLoop(arr) {
         for (let i = 0; i < arr.length; i++) {
@@ -265,24 +258,14 @@ function userDataToinquirerData(fn) {
 }
 
 /**
- * 将数据返回出去使用
- * 
- * @param {any} arr 配置文件原始格式数据
- * @returns 最终整理好的 inquirer 所用的数据（就是问题步骤配置）
- */
-function getInquirerData(arr) {
-    return userDataToinquirerData(resetUserData(arr));
-}
-
-/**
  * 查找配置文件里面对应的 url 地址（仓库地址）
  * 
  * @param {any} arr 配置文件原始格式数据
  * @param {any} result 最后 inquirer.prompt 得到的选择项对象
  * @returns 
  */
-function findRepoUrl(arr, result) {
-    let url = '';
+function findResult(arr, result) {
+    let data = null;
 
     const findInList = function (list, result) {
         const aChildList = list;
@@ -290,7 +273,7 @@ function findRepoUrl(arr, result) {
             for (let name in result) {
                 if (result[name] === aChildList[i].text) {
                     if (aChildList[i].url) {
-                        url = aChildList[i].url;
+                        data = aChildList[i];
                     }
                     if (aChildList[i].child && aChildList[i].child.length) {
                         findInList(aChildList[i].child, result);
@@ -306,12 +289,13 @@ function findRepoUrl(arr, result) {
         }
     }
 
-    return url;
+    return data;
 }
 
 exports.deleteFile = deleteFile;
 exports.cloneFileFromGit = cloneFileFromGit;
 exports.copyFile = copyFile;
 exports.setConfigFile = setConfigFile;
-exports.getInquirerData = getInquirerData;
-exports.findRepoUrl = findRepoUrl;
+exports.resetUserData = resetUserData;
+exports.userDataToinquirerData = userDataToinquirerData;
+exports.findResult = findResult;

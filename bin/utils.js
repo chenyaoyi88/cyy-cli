@@ -29,5 +29,15 @@ function addZero(num) {
     }
 }
 
+function getFileType(file) {
+    const cuttingPoint = file.lastIndexOf('.');
+    if (cuttingPoint == -1) {
+        return 'unknow';
+    } else {
+        return file.substring(cuttingPoint + 1);
+    }
+}
+
 exports.replaceHtml = replaceHtml;
 exports.addZero = addZero;
+exports.getFileType = getFileType;
