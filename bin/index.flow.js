@@ -110,6 +110,7 @@ function cloneFileFromGit(repo, file) {
  * @returns 
  */
 function copyFile(sorceDir, copyDirTo) {
+    rimraf.sync(path.join(sorceDir, '.git'));
     return fsp.copy(sorceDir, copyDirTo);
 }
 
