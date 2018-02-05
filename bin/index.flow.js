@@ -2,8 +2,66 @@ const fsp = require('fs-extra');
 const gitClone = require('git-clone');
 const rimraf = require('rimraf');
 const path = require('path');
+const ora = require('ora');
+const chalk = require('chalk');
+const request = require('request');
 const utils = require('./utils');
 const config_cyycli = 'config.cyycli.json';
+const packageConfig = require('./../package.json');
+
+/**
+ * 检查本地 cli 版本
+ * 
+ * @returns {Promise} 返回 Promise 继续回调
+ */
+function checkVersion() {
+    // 命令行中显示 loading 等待中...
+    const spinner = ora(chalk.gray('正在检查版本...')).start();
+
+    return new Promise((resolve, reject) => {
+        // 请求查看 npmjs 获取包的信息
+        request({
+            url: 'https://registry.npmjs.org/cyy-cli',
+            timeout: 2000
+        }, function (err, res, body) {
+            // 停止loading
+            spinner.stop();
+
+            // 请求 失败 或 超时
+            if (err) {
+                if (err.code === 'ETIMEDOUT') {
+                    console.log(chalk.red('获取最新版本请求超时，使用当前已安装版本'));
+                    resolve();
+                } else {
+                    console.log(chalk.red('获取最新版本请求失败'));
+                    reject(err);
+                }
+                return;
+            }
+
+            // 请求最新版本成功
+            if (res.statusCode == 200) {
+                // 最新版本号和以前的版本号之间的对比，然后给出相应的提示信息
+                const latestVersion = JSON.parse(body)['dist-tags'].latest;
+                const localVersion = packageConfig.version;
+                if (latestVersion !== localVersion) {
+                    console.log();
+                    console.log(chalk.gray('  cyy-cli新版本可用.'));
+                    console.log();
+                    console.log(chalk.gray('  最新版本: ' + latestVersion));
+                    console.log(chalk.gray('  本地版本: ' + localVersion));
+                    console.log();
+                    console.log('  重新安装获得新特性: ' + chalk.green('npm install -g cyy-cli'));
+                    console.log();
+                    return;
+                }
+            } else {
+                console.log(chalk.red('获取最新版本请求失败，使用当前已安装版本'), res.statusCode);
+            }
+            resolve();
+        });
+    });
+};
 
 /**
  * 删除文件
@@ -292,6 +350,28 @@ function findResult(arr, result) {
     return data;
 }
 
+/**
+ * 复制配置文件
+ * 
+ * @param {any} repoConfigSource 原配置文件位置
+ * @param {any} repoConfigCopyTo 输入位置
+ * @param {any} msg 提示信息
+ */
+function copyConfigFile(repoConfigSource, repoConfigCopyTo, msg) {
+    let spinner = ora(msg + '中... ').start();
+    fsp.copy(repoConfigSource, repoConfigCopyTo)
+        .then(() => {
+            spinner.succeed(chalk.green(msg + '成功'));
+            process.exit(0);
+        })
+        .catch(err => {
+            console.error(err);
+            process.exit(1);
+        });
+}
+
+
+exports.checkVersion = checkVersion;
 exports.deleteFile = deleteFile;
 exports.cloneFileFromGit = cloneFileFromGit;
 exports.copyFile = copyFile;
@@ -299,3 +379,4 @@ exports.setConfigFile = setConfigFile;
 exports.resetUserData = resetUserData;
 exports.userDataToinquirerData = userDataToinquirerData;
 exports.findResult = findResult;
+exports.copyConfigFile = copyConfigFile;
