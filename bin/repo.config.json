@@ -103,5 +103,20 @@
     "type": "input",
     "name": "author",
     "message": "请输入开发人员名字"
+},
+{
+    "type": "input",
+    "name": "onlineYear",
+    "message": "上线时间-年"
+},
+{
+    "type": "input",
+    "name": "onlineMonth",
+    "message": "上线时间-月"
+},
+{
+    "type": "input",
+    "name": "onlineDate",
+    "message": "上线时间-日"
 }
 ]

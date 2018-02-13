@@ -14,7 +14,7 @@
 
 ## 工作原理
 
-根据输入的模板信息，在上传的 repo.config.json 里面找到对应的项目模板仓库地址，先删除之前已下载的本地旧模板，然后通过仓库地址拉取最新的模板，最后把项目模板改成你输入的项目名，复制到你当作命令行执行的目录下，同时生成的项目模板信息文件 config.cyycli.json 到模板文件里面。
+根据输入的模板信息，在你上传的 repo.config.json 里面找到对应的项目模板仓库地址，先删除之前已下载的本地旧模板，然后通过仓库地址拉取最新的模板，最后把项目模板改成你输入的项目名，复制到你当作命令行执行的目录下，同时生成的项目模板信息文件 config.info.json 到模板文件里面。
 
 ## 安装
 
@@ -32,6 +32,8 @@ cnpm install cyy-cli -g
 ```bash
 cyy-cli
 ```
+
+注：默认模版仓库里面是随便填写的仓库，您可以先执行 cyy-cli download 下载默认模版仓库，修改成你要上传的模版仓库配置再 cyy-cli upload xxx.json 上传
 
 上传模版（必须是 json 格式文件）
 
@@ -71,12 +73,11 @@ cyy-cli --help
 字段说明：
 
 ```javascript
-"message": "xxx"    //  必填，提示
-"type": "list"      //  必填，单选项内容
-"type": "input"     //  必填，输入项内容
-"name": "xxx"       //  必填，唯一值，用于模版层级识别 
-"text": "xxx"       //  单选项显示的文字
-"child": []         //  非必填，如果此层下面没有选项了，可不填该属性
+"message"   //  必填，提示
+"type"      //  必填，单选项内容，list 为单选项，input 为输入项
+"name"      //  必填，唯一值，用于模版层级识别 
+"text"      //  单选项显示的文字
+"child"     //  非必填，如果此层下面没有选项了，可不填该属性
 ```
 
 repo.config.json 默认配置文件结构说明
@@ -100,10 +101,13 @@ repo.config.json 默认配置文件结构说明
 │         ├── >普通    
 │         └──  抽奖    
 ├── 项目名                       # 输入项    
-└── 开发者                       # 输入项                          
+├── 开发人员                     # 输入项   
+├── 上线时间-年                  # 输入项   
+├── 上线时间-月                  # 输入项   
+└── 上线时间-日                  # 输入项                          
 ```
 
-repo.config.json 默认配置文件
+repo.config.json 默认参考配置文件
 
 ```json
 [{
@@ -112,32 +116,6 @@ repo.config.json 默认配置文件
         "name": "plaform",
         "text": "平台",
         "child": [{
-                "name": "pc",
-                "text": "PC端",
-                "url": "https://github.com/chenyaoyi88/h5-webpack.git"
-            },
-            {
-                "name": "app",
-                "text": "APP端",
-                "child": [{
-                    "name": "react-native",
-                    "text": "react-native框架",
-                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
-                }, {
-                    "name": "weex",
-                    "text": "weex框架",
-                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
-                }, {
-                    "name": "mui",
-                    "text": "mui框架",
-                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
-                }, {
-                    "name": "ionic",
-                    "text": "ionic框架",
-                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
-                }]
-            },
-            {
                 "name": "mobile",
                 "text": "移动端",
                 "child": [{
@@ -165,14 +143,65 @@ repo.config.json 默认配置文件
                     "name": "act",
                     "text": "活动",
                     "child": [{
-                        "name": "normal",
-                        "text": "普通",
+                        "name": "webpack",
+                        "text": "h5-webpack",
                         "url": "https://github.com/chenyaoyi88/h5-webpack.git"
                     }, {
+                        "name": "parcel",
+                        "text": "h5-parcel",
+                        "url": "https://github.com/chenyaoyi88/h5-parcel.git"
+                    }]
+                }]
+            },
+            {
+                "name": "pc",
+                "text": "PC端",
+                "child": [{
+                    "name": "spa",
+                    "text": "单页应用框架",
+                    "child": [{
+                        "name": "react",
+                        "text": "react框架",
+                        "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                    }, {
+                        "name": "angular",
+                        "text": "angular框架",
+                        "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                    }, {
+                        "name": "vue",
+                        "text": "vue框架",
+                        "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                    }]
+                }, {
+                    "name": "act",
+                    "text": "活动",
+                    "url": "https://github.com/chenyaoyi88/cyy-tool.git",
+                    "child": [{
                         "name": "lottery",
                         "text": "抽奖",
                         "url": "https://github.com/chenyaoyi88/cyy-tool.git"
                     }]
+                }]
+            },
+            {
+                "name": "app",
+                "text": "APP端",
+                "child": [{
+                    "name": "react-native",
+                    "text": "react-native框架",
+                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                }, {
+                    "name": "weex",
+                    "text": "weex框架",
+                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                }, {
+                    "name": "mui",
+                    "text": "mui框架",
+                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
+                }, {
+                    "name": "ionic",
+                    "text": "ionic框架",
+                    "url": "https://github.com/chenyaoyi88/cyy-tool.git"
                 }]
             }
         ]
@@ -186,6 +215,21 @@ repo.config.json 默认配置文件
         "type": "input",
         "name": "author",
         "message": "请输入开发人员名字"
+    },
+    {
+        "type": "input",
+        "name": "onlineYear",
+        "message": "上线时间-年"
+    },
+    {
+        "type": "input",
+        "name": "onlineMonth",
+        "message": "上线时间-月"
+    },
+    {
+        "type": "input",
+        "name": "onlineDate",
+        "message": "上线时间-日"
     }
 ]
 ```

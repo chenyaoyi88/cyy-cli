@@ -37,7 +37,7 @@ if (process.argv.length <= 2) {
       console.log(chalk.green(figlet.textSync('CYY CLI')));
       // cli 开始提示输入
       inquirer.prompt(installData.question).then(function (res) {
-        readyToCreateTemplate(res);
+        createTemplate(res);
       });
     })
     .catch((err) => {
@@ -93,7 +93,7 @@ if (process.argv.length <= 2) {
  *
  * @param {any} info 用户输入完的模版信息
  */
-function readyToCreateTemplate(info) {
+function createTemplate(info) {
 
   // 模板信息
   const templateInfo = flow.findResult(resetUserData, info);
@@ -103,6 +103,8 @@ function readyToCreateTemplate(info) {
   const copyDirTo = path.join(currentDir, info.appName);
   // 仓库地址
   const repoDir = templateInfo.url;
+  // 输入项
+  const inputInfo = flow.findInput(installData.question, info);
 
   // console.log(' ');
   // console.log('选择类型的模板位置', sorceDir);
@@ -110,37 +112,26 @@ function readyToCreateTemplate(info) {
   // console.log(' ');
 
   console.log(' ');
-  // 创建模版
-  createTemplate({
-    copyDirTo: copyDirTo,
-    sorceDir: sorceDir,
-    repoDir: repoDir,
-    info: info
-  });
-}
 
-/**
- * 创建模版
- * 
- * @param {any} opt 
- */
-async function createTemplate(opt) {
-  const options = opt || {};
-  let spinner = null;
-  try {
-    spinner = ora('正在生成项目模板... ').start();
-    await flow.deleteFile(options.sorceDir);
-    spinner.succeed(chalk.green('删除旧模板成功'));
-    spinner = ora('使用 git clone 获取最新项目模板... ').start();
-    await flow.cloneFileFromGit(options.repoDir, options.sorceDir);
-    spinner.succeed(chalk.green('获取新模板成功'));
-    spinner = ora('复制模版到您当前目录下... ').start();
-    await flow.copyFile(options.sorceDir, options.copyDirTo);
-    spinner.succeed(chalk.green('复制新模板成功'));
-    await flow.setConfigFile(options.copyDirTo, options.info);
-    spinner.succeed(chalk.green('项目信息写入成功'));
-  } catch (err) {
-    spinner.fail('操作失败');
-    console.log(err);
-  }
+  // 创建模版
+  (async function () {
+    let spinner = null;
+    try {
+      spinner = ora('正在生成项目模板... ').start();
+      await flow.deleteFile(sorceDir);
+      spinner.succeed(chalk.green('删除旧模板成功'));
+      spinner = ora('使用 git clone 获取最新项目模板... ').start();
+      await flow.cloneFileFromGit(repoDir, sorceDir);
+      spinner.succeed(chalk.green('获取新模板成功'));
+      spinner = ora('复制模版到您当前目录下... ').start();
+      await flow.copyFile(sorceDir, copyDirTo);
+      spinner.succeed(chalk.green('复制新模板成功'));
+      await flow.setConfigFile(copyDirTo, inputInfo);
+      spinner.succeed(chalk.green('项目信息写入成功'));
+    } catch (err) {
+      spinner.fail('操作失败');
+      console.log(err);
+    }
+  })();
+
 }

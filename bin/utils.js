@@ -29,6 +29,12 @@ function addZero(num) {
     }
 }
 
+/**
+ * 获取文件类型
+ * 
+ * @param {any} file 文件
+ * @returns 类型后缀
+ */
 function getFileType(file) {
     const cuttingPoint = file.lastIndexOf('.');
     if (cuttingPoint == -1) {

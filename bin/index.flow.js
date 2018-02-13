@@ -6,7 +6,7 @@ const ora = require('ora');
 const chalk = require('chalk');
 const request = require('request');
 const utils = require('./utils');
-const config_cyycli = 'config.cyycli.json';
+const configInfo_json = 'config.info.json';
 const packageConfig = require('./../package.json');
 
 /**
@@ -30,7 +30,7 @@ function checkVersion() {
             // 请求 失败 或 超时
             if (err) {
                 if (err.code === 'ETIMEDOUT') {
-                    console.log(chalk.red('获取最新版本请求超时，使用当前已安装版本'));
+                    console.log(chalk.yellow('获取最新版本请求超时，使用当前已安装版本'));
                     resolve();
                 } else {
                     console.log(chalk.red('获取最新版本请求失败'));
@@ -122,47 +122,27 @@ function copyFile(sorceDir, copyDirTo) {
  * @param {any} configFile config.cyycli.json 文件名
  */
 function setConfigFile(targetDir, writeInInfo) {
-    fsp.readdir(targetDir, function (err, files) {
-        if (err) {
-            console.log('获取文件列表失败');
-            return;
-        }
-        files.forEach(file => {
-            if (file.includes(config_cyycli)) {
-                // 有 config.json 修改
-                return configFileModify(targetDir, writeInInfo, config_cyycli);
-            } else {
-                // 没有 config.json 写入一个
-                return configFileWrite(targetDir, writeInInfo, config_cyycli);
-            }
-        });
-    });
+    return configFileWrite(targetDir, writeInInfo, configInfo_json);
 }
 
 /**
  * 写入 config.json
  *
  * @param {any} dir 目标文件夹
- * @param {any} json 写入信息
+ * @param {any} writeInInfo 写入信息
  * @param {any} fileName 写入的文件名
  */
-function configFileWrite(dir, json, fileName) {
+function configFileWrite(dir, writeInInfo, fileName) {
     return new Promise((resolve, reject) => {
         const configFile = path.join(dir, fileName);
         const oDate = new Date();
-        fsp.writeFile(
-            configFile,
-            `
-{
-    "appName": "${json.appName}",
-    "author": "${json.author}",
-    "createTime": {
-        "year": "${oDate.getFullYear()}",
-        "month": "${utils.addZero(oDate.getMonth() + 1)}",
-        "date": "${utils.addZero(oDate.getDate())}"
-    }
-}
-    `,
+        const oCreateDateInfo = {
+            createYear: String(oDate.getFullYear()),
+            createMonth: String(utils.addZero(oDate.getMonth() + 1)),
+            createDate: String(utils.addZero(oDate.getDate()))
+        };
+        const oComposeInfo = Object.assign(writeInInfo, oCreateDateInfo);
+        fsp.writeFile(configFile, JSON.stringify(oComposeInfo, null, 4),
             function (err) {
                 if (err) {
                     console.log('写入文件失败');
@@ -172,60 +152,6 @@ function configFileWrite(dir, json, fileName) {
                 resolve();
             });
     });
-}
-
-/**
- * 修改 config.json
- *
- * @param {any} dir 目标文件夹
- * @param {any} json 写入信息
- * @param {any} fileName 写入的文件名
- */
-function configFileModify(dir, json, fileName) {
-    return new Promise((resolve, reject) => {
-        const configFile = path.join(dir, fileName);
-        const str = fsp.readFileSync(configFile, 'utf-8');
-        const strNew = utils.replaceHtml(configFileModifyInfo(json), str);
-        fsp.writeFile(configFile, strNew, 'utf-8', function (err) {
-            if (err) {
-                console.log('重写文件失败');
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
-}
-
-/**
- * 匹配修改配置
- *
- * @param {any} json 对象
- * @returns {string} 返回新的匹配修改后的字符串
- */
-function configFileModifyInfo(json) {
-    const oDate = new Date();
-    return [{
-            reg: /"(\s)?appName(\s)?"(\s)?:(\s)?".*"/,
-            text: `"appName": "${json.appName}"`
-        },
-        {
-            reg: /"(\s)?author(\s)?"(\s)?:(\s)?".*"/,
-            text: `"author": "${json.author}"`
-        },
-        {
-            reg: /"(\s)?year(\s)?"(\s)?:(\s)?".*"/,
-            text: `"year": "${oDate.getFullYear()}"`
-        },
-        {
-            reg: /"(\s)?month(\s)?"(\s)?:(\s)?".*"/,
-            text: `"month": "${utils.addZero(oDate.getMonth() + 1)}"`
-        },
-        {
-            reg: /"(\s)?date(\s)?"(\s)?:(\s)?".*"/,
-            text: `"date": "${utils.addZero(oDate.getDate())}"`
-        }
-    ];
 }
 
 /**
@@ -291,7 +217,7 @@ function userDataToinquirerData(data) {
                     if (value.length) {
                         return true;
                     } else {
-                        return arr[i].message;
+                        return chalk.red(arr[i].message);
                     }
                 }
                 aResetUserData.push(arr[i]);
@@ -352,6 +278,27 @@ function findResult(arr, result) {
 }
 
 /**
+ * 找出 input 输入项的键值对
+ * 
+ * @param {any} list 所有的输入项
+ * @param {any} json 用户已输入项
+ * @returns 只有 input 的 json
+ */
+function findInput(list, json) {
+    let newJson = {};
+    for (let item of list) {
+        if (item.type === 'input') {
+            for (let name in json) {
+                if (item.name === name) {
+                    newJson[name] = json[name];
+                }
+            }
+        }
+    }
+    return newJson;
+}
+
+/**
  * 复制配置文件
  * 
  * @param {any} repoConfigSource 原配置文件位置
@@ -371,7 +318,6 @@ function copyConfigFile(repoConfigSource, repoConfigCopyTo, msg) {
         });
 }
 
-
 exports.checkVersion = checkVersion;
 exports.deleteFile = deleteFile;
 exports.cloneFileFromGit = cloneFileFromGit;
@@ -380,4 +326,5 @@ exports.setConfigFile = setConfigFile;
 exports.resetUserData = resetUserData;
 exports.userDataToinquirerData = userDataToinquirerData;
 exports.findResult = findResult;
+exports.findInput = findInput;
 exports.copyConfigFile = copyConfigFile;
