@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const path = require('path');
 const exec = require('child_process').exec;
 // 交互式命令的（https://www.npmjs.com/package/inquirer）
 const inquirer = require('inquirer');
@@ -11,7 +12,6 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 // cli 处理标志符号（https://www.npmjs.com/package/ora）
 const ora = require('ora');
-const path = require('path');
 // 文件处理流程
 const flow = require('./index.flow');
 // 仓库配置文件
@@ -26,7 +26,6 @@ const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const templateDir = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
-
 const utils = require('./utils');
 const packageConfig = require('./../package.json');
 
@@ -36,32 +35,14 @@ if (process.argv.length <= 2) {
     .then((res) => {
       // 显示 cli 签名
       console.log(chalk.green(figlet.textSync('CYY CLI')));
-
-      let checkVersionMsg = '';
-
-      switch (res) {
-        case 'timeout':
-          // 检测版本超时
-          checkVersionMsg = '获取最新版本请求超时，使用当前已安装版本';
-          break;
-        case 'updateError':
-          // 检测最新版本失败
-          checkVersionMsg = '获取最新版本请求失败，使用当前已安装版本';
-          break;
-        case 'update':
-          // 检测版本需要更新->是否升级 ? 使用当前版本 : 升级
-          updateCli();
-          return;
-          break;
-      }
-      console.log(chalk.yellow(checkVersionMsg), '\n');
-      inquirer.prompt(installData.question).then(function (res) {
-        createTemplate(res);
-      });
-
+      // 开始执行 cli
+      cliStart(res);
     })
     .catch((err) => {
-      console.log(err);
+      console.log(chalk.red('获取最新版本请求失败，使用当前已安装版本'), '\n');
+      inquirer.prompt(installData.question).then(function (res) {
+        createTemplate(res, true);
+      });
     });
 } else {
   // 输入 cyy-cli 有其他参数，获取并处理
@@ -113,8 +94,7 @@ if (process.argv.length <= 2) {
  *
  * @param {any} info 用户输入完的模版信息
  */
-function createTemplate(info) {
-
+function createTemplate(info, isOffline) {
   // 模板信息
   const templateInfo = flow.findResult(resetUserData, info);
   // 模板位置
@@ -128,36 +108,86 @@ function createTemplate(info) {
 
   console.log(' ');
 
-  // 创建模版
-  (async function () {
-    let spinner = null;
-    try {
-      spinner = ora('正在生成项目模板... ').start();
-      await flow.deleteFile(sorceDir);
-      spinner.succeed(chalk.green('删除旧模板成功'));
-      spinner = ora('使用 git clone 获取最新项目模板... ').start();
-      await flow.cloneFileFromGit(repoDir, sorceDir);
-      spinner.succeed(chalk.green('获取新模板成功'));
-      spinner = ora('复制模版到您当前目录下... ').start();
-      await flow.copyFile(sorceDir, copyDirTo);
-      spinner.succeed(chalk.green('复制新模板成功'));
-      await flow.setConfigFile(copyDirTo, inputInfo);
-      spinner.succeed(chalk.green('项目信息写入成功'));
-      process.exit(0);
-      console.log(' ');
-    } catch (err) {
-      spinner.fail('操作失败');
-      console.log(err);
-    }
-  })();
+  if (!isOffline) {
+    // 创建模版
+    (async function () {
+      let spinner = null;
+      try {
+        spinner = ora('正在生成项目模板... ').start();
+        await flow.deleteFile(sorceDir);
+        spinner.succeed(chalk.green('删除旧模板成功'));
+        spinner = ora('使用 git clone 获取最新项目模板... ').start();
+        await flow.cloneFileFromGit(repoDir, sorceDir);
+        spinner.succeed(chalk.green('获取新模板成功'));
+        spinner = ora('复制模版到您当前目录下... ').start();
+        await flow.copyFile(sorceDir, copyDirTo);
+        spinner.succeed(chalk.green('复制新模板成功'));
+        await flow.setConfigFile(copyDirTo, inputInfo);
+        spinner.succeed(chalk.green('项目信息写入成功'));
+        process.exit(0);
+        console.log(' ');
+      } catch (err) {
+        spinner.fail('操作失败');
+        console.log(err);
+        process.exit(1);
+      }
+    })();
+  } else {
+    // 创建模版
+    (async function () {
+      let spinner = null;
+      try {
+        spinner = ora('复制模版到您当前目录下... ').start();
+        await flow.copyFile(sorceDir, copyDirTo);
+        spinner.succeed(chalk.green('复制新模板成功'));
+        await flow.setConfigFile(copyDirTo, inputInfo);
+        spinner.succeed(chalk.green('项目信息写入成功'));
+        process.exit(0);
+        console.log(' ');
+      } catch (err) {
+        spinner.fail('操作失败');
+        console.log(err);
+        process.exit(1);
+      }
+    })();
+  }
 
+}
+
+/**
+ * 开始执行 cli
+ * 
+ * @param {any} res 
+ * @returns 
+ */
+function cliStart(res) {
+  let checkVersionMsg = '';
+  switch (res) {
+    case 'timeout':
+      // 检测版本超时
+      checkVersionMsg = '获取最新版本请求超时，使用当前已安装版本';
+      break;
+    case 'updateError':
+      // 检测最新版本失败
+      checkVersionMsg = '获取最新版本请求失败，使用当前已安装版本';
+      break;
+    case 'update':
+      // 检测版本需要更新->是否升级 ? 使用当前版本 : 升级
+      cliUpdate();
+      return;
+      break;
+  }
+  console.log(chalk.yellow(checkVersionMsg), '\n');
+  inquirer.prompt(installData.question).then(function (res) {
+    createTemplate(res);
+  });
 }
 
 /**
  * 更新 cyy-cli
  * 
  */
-function updateCli() {
+function cliUpdate() {
   inquirer.prompt([{
     type: 'confirm',
     name: 'update',
