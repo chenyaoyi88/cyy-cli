@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const exec = require('child_process').exec;
 // 交互式命令的（https://www.npmjs.com/package/inquirer）
 const inquirer = require('inquirer');
 // 命令操作工具（https://www.npmjs.com/package/commander）
@@ -32,13 +33,32 @@ const packageConfig = require('./../package.json');
 if (process.argv.length <= 2) {
   // 只输入 cyy-cli 没有其他参数
   flow.checkVersion()
-    .then(() => {
+    .then((res) => {
       // 显示 cli 签名
       console.log(chalk.green(figlet.textSync('CYY CLI')));
-      // cli 开始提示输入
+
+      let checkVersionMsg = '';
+
+      switch (res) {
+        case 'timeout':
+          // 检测版本超时
+          checkVersionMsg = '获取最新版本请求超时，使用当前已安装版本';
+          break;
+        case 'updateError':
+          // 检测最新版本失败
+          checkVersionMsg = '获取最新版本请求失败，使用当前已安装版本';
+          break;
+        case 'update':
+          // 检测版本需要更新->是否升级 ? 使用当前版本 : 升级
+          updateCli();
+          return;
+          break;
+      }
+      console.log(chalk.yellow(checkVersionMsg), '\n');
       inquirer.prompt(installData.question).then(function (res) {
         createTemplate(res);
       });
+
     })
     .catch((err) => {
       console.log(err);
@@ -97,19 +117,14 @@ function createTemplate(info) {
 
   // 模板信息
   const templateInfo = flow.findResult(resetUserData, info);
-  // 模板目录
+  // 模板位置
   const sorceDir = path.join(templateDir, templateInfo.rank);
-  // 目标地址
+  // 目标位置
   const copyDirTo = path.join(currentDir, info.appName);
-  // 仓库地址
+  // 选中的仓库地址
   const repoDir = templateInfo.url;
   // 输入项
   const inputInfo = flow.findInput(installData.question, info);
-
-  // console.log(' ');
-  // console.log('选择类型的模板位置', sorceDir);
-  // console.log('要复制到的目录', copyDirTo);
-  // console.log(' ');
 
   console.log(' ');
 
@@ -134,4 +149,40 @@ function createTemplate(info) {
     }
   })();
 
+}
+
+/**
+ * 更新 cyy-cli
+ * 
+ */
+function updateCli() {
+  inquirer.prompt([{
+    type: 'confirm',
+    name: 'update',
+    message: chalk.yellow('您当前使用的是旧版本，是否需要更新？'),
+  }]).then(function (res) {
+    console.log(' ');
+    if (res.update) {
+      let spinner = ora('正在更新，请勿中断... ').start();;
+      exec('npm install cyy-cli -g', (error, stdout, stderr) => {
+        if (error) {
+          spinner.fail(chalk.red(`更新失败\n\n${error}`));
+          process.exit(1);
+          return;
+        }
+        if (stdout) {
+          spinner.succeed(chalk.green(`更新成功\n\n${chalk.green(`${stdout}`)}`));
+          process.exit(0);
+        } else {
+          spinner.succeed(chalk.yellow(`更新失败\n\n${chalk.yellow(`${stdout}`)}`));
+          process.exit(1);
+        }
+      });
+    } else {
+      console.log(' ');
+      inquirer.prompt(installData.question).then(function (res) {
+        createTemplate(res);
+      });
+    }
+  });
 }

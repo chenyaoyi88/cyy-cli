@@ -30,10 +30,8 @@ function checkVersion() {
             // 请求 失败 或 超时
             if (err) {
                 if (err.code === 'ETIMEDOUT') {
-                    console.log(chalk.yellow('获取最新版本请求超时，使用当前已安装版本'));
-                    resolve();
+                    resolve('timeout');
                 } else {
-                    console.log(chalk.red('获取最新版本请求失败'));
                     reject(err);
                 }
                 return;
@@ -45,20 +43,16 @@ function checkVersion() {
                 const latestVersion = JSON.parse(body)['dist-tags'].latest;
                 const localVersion = packageConfig.version;
                 if (latestVersion !== localVersion) {
-                    console.log();
-                    console.log(chalk.gray('  cyy-cli新版本可用.'));
-                    console.log();
-                    console.log(chalk.gray('  最新版本: ' + latestVersion));
-                    console.log(chalk.gray('  本地版本: ' + localVersion));
-                    console.log();
-                    console.log('  重新安装获得新特性: ' + chalk.green('npm install -g cyy-cli'));
-                    console.log();
+                    console.log(chalk.gray('cyy-cli 新版本可用'), '\n');
+                    console.log(chalk.gray('最新版本: ' + latestVersion));
+                    console.log(chalk.gray('本地版本: ' + localVersion), '\n');
+                    resolve('update');
                     return;
                 }
+                resolve('success');
             } else {
-                console.log(chalk.red('获取最新版本请求失败，使用当前已安装版本'), res.statusCode);
+                resolve('updateError');
             }
-            resolve();
         });
     });
 };
