@@ -143,6 +143,8 @@ function createTemplate(info) {
       spinner.succeed(chalk.green('复制新模板成功'));
       await flow.setConfigFile(copyDirTo, inputInfo);
       spinner.succeed(chalk.green('项目信息写入成功'));
+      process.exit(0);
+      console.log(' ');
     } catch (err) {
       spinner.fail('操作失败');
       console.log(err);
