@@ -69,7 +69,7 @@ if (process.argv.length <= 2) {
     });
 
   program
-    .command('download')
+    .command('download repo')
     .description('下载默认仓库模版 repo.config.json 文件')
     .action(function () {
       // 仓库配置文件
@@ -79,7 +79,17 @@ if (process.argv.length <= 2) {
     });
 
   program
-    .command('reset')
+    .command('download all template')
+    .description('下载 repo.config.json 所有的模版文件到 cli 本地')
+    .action(function () {
+      // 仓库配置文件
+      const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
+      // 下载配置文件模版到当前Node.js进程执行时的工作目录
+      flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
+    });
+
+  program
+    .command('reset repo')
     .description('重置仓库模版 repo.config.json 文件')
     .action(function () {
       // 将当前读取的配置文件重置到初始模版状态
