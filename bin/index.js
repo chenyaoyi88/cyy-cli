@@ -19,7 +19,7 @@ const repoConfig = require('./../repo/repo.config.json');
 // 整理仓库配置文件数据
 const resetUserData = flow.resetUserData(repoConfig);
 // 将 repo.config.json 的数据转化成 inquirer 所需的格式
-const installData = flow.userDataToinquirerData(resetUserData);
+const installData = flow.userDataToinquirerData(resetUserData.data);
 // 根目录
 const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 // 模板目录
@@ -79,13 +79,14 @@ if (process.argv.length <= 2) {
     });
 
   program
-    .command('download all template')
+    .command('download template')
     .description('下载 repo.config.json 所有的模版文件到 cli 本地')
     .action(function () {
-      // 仓库配置文件
-      const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
-      // 下载配置文件模版到当前Node.js进程执行时的工作目录
-      flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
+      flow.cloneAllRepoTemplate(templateDir, resetUserData.aRepoUrls);
+      // // 仓库配置文件
+      // const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
+      // // 下载配置文件模版到当前Node.js进程执行时的工作目录
+      // flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
     });
 
   program
@@ -106,7 +107,7 @@ if (process.argv.length <= 2) {
  */
 function createTemplate(info, isOffline) {
   // 模板信息
-  const templateInfo = flow.findResult(resetUserData, info);
+  const templateInfo = flow.findResult(resetUserData.data, info);
   // 模板位置
   const sorceDir = path.join(templateDir, templateInfo.rank);
   // 目标位置

@@ -100,6 +100,30 @@ function cloneFileFromGit(repo, file) {
     });
 }
 
+function cloneAllRepoTemplate(templateDir, aRepoUrls) {
+    const len = aRepoUrls.length;
+    let count = 0;
+    console.log(len);
+    console.log(count);
+    const clone = function (count) {
+        console.log(aRepoUrls[count].repoUrl);
+        console.log(path.join(templateDir, aRepoUrls[count].rank));
+        gitClone(aRepoUrls[count].repoUrl, path.join(templateDir, aRepoUrls[count].rank), function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            count++;
+            if (count === len) {
+                console.log('clone 全部仓库完成');
+                return;
+            }
+            clone(count);
+        });
+    }
+    clone(count);
+}
+
 /**
  * 复制文件（夹）
  * 
@@ -174,6 +198,7 @@ function configFileWrite(dir, writeInInfo, fileName) {
  */
 function resetUserData(arr) {
     let maxLevel = 0;
+    let aRepoUrls = [];
     const setRepo = function (arr, opt) {
         let options = opt || {};
         for (let i = 0; i < arr.length; i++) {
@@ -183,6 +208,13 @@ function resetUserData(arr) {
                 arr[i].rank = arr[i].name;
             } else {
                 arr[i].rank = options.rank + '_' + arr[i].name;
+                if (arr[i].url) {
+                    const json = {
+                        repoUrl: arr[i].url,
+                        rank: arr[i].rank
+                    };
+                    aRepoUrls.push(json);
+                }
             }
             if (arr[i].child && arr[i].child.length) {
                 arr[i].type = 'list';
@@ -199,7 +231,10 @@ function resetUserData(arr) {
         }
     }
     setRepo(arr);
-    return arr;
+    return {
+        data: arr,
+        aRepoUrls: aRepoUrls
+    };
 }
 
 /**
@@ -333,6 +368,7 @@ function copyConfigFile(repoConfigSource, repoConfigCopyTo, msg) {
 exports.checkVersion = checkVersion;
 exports.deleteFile = deleteFile;
 exports.cloneFileFromGit = cloneFileFromGit;
+exports.cloneAllRepoTemplate = cloneAllRepoTemplate;
 exports.copyFile = copyFile;
 exports.setConfigFile = setConfigFile;
 exports.resetUserData = resetUserData;
