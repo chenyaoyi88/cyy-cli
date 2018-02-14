@@ -47,7 +47,7 @@ if (process.argv.length <= 2) {
 } else {
   // 输入 cyy-cli 有其他参数，获取并处理
 
-  // 默认配置文件
+  // 默认的配置文件
   const repoConfigSource = path.join(rootPath, 'bin', 'repo.config.json');
   // 读取的配置文件
   const repoConfigLoad = path.join(rootPath, 'repo', 'repo.config.json');
@@ -55,7 +55,7 @@ if (process.argv.length <= 2) {
   program.version(packageConfig.version)
   program
     .command('upload <repo.config.json>')
-    .description('上传你的 repo.config.json 文件')
+    .description('上传你的仓库模版 *.json 文件')
     .action(function (file) {
       if (utils.getFileType(file) !== 'json') {
         console.log('上传的文件名必须是 json 格式');
@@ -70,7 +70,7 @@ if (process.argv.length <= 2) {
 
   program
     .command('download')
-    .description('下载 repo.config.json 模板文件')
+    .description('下载默认仓库模版 repo.config.json 文件')
     .action(function () {
       // 仓库配置文件
       const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
@@ -80,7 +80,7 @@ if (process.argv.length <= 2) {
 
   program
     .command('reset')
-    .description('重置 repo.config.json 模板文件')
+    .description('重置仓库模版 repo.config.json 文件')
     .action(function () {
       // 将当前读取的配置文件重置到初始模版状态
       flow.copyConfigFile(repoConfigSource, repoConfigLoad, '重置配置模版文件');
@@ -127,8 +127,7 @@ function createTemplate(info, isOffline) {
         process.exit(0);
         console.log(' ');
       } catch (err) {
-        spinner.fail('操作失败');
-        console.log(err);
+        spinner.fail(`${err.text}\n\n${err.error}`);
         process.exit(1);
       }
     })();
@@ -145,8 +144,7 @@ function createTemplate(info, isOffline) {
         process.exit(0);
         console.log(' ');
       } catch (err) {
-        spinner.fail('操作失败');
-        console.log(err);
+        spinner.fail(`${err.text}\n\n${err.error}`);
         process.exit(1);
       }
     })();

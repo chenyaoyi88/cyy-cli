@@ -67,8 +67,10 @@ function deleteFile(file) {
     return new Promise((resolve, reject) => {
         rimraf(file, function (err) {
             if (err) {
-                console.log('删除模版失败');
-                reject(err);
+                reject({
+                    error: err,
+                    text: '删除模版失败'
+                });
                 return;
             }
             resolve();
@@ -87,8 +89,10 @@ function cloneFileFromGit(repo, file) {
     return new Promise((resolve, reject) => {
         gitClone(repo, file, function (err) {
             if (err) {
-                console.log('git clone失败');
-                reject(err);
+                reject({
+                    error: err,
+                    text: 'git clone失败'
+                });
                 return;
             }
             resolve();
@@ -105,7 +109,18 @@ function cloneFileFromGit(repo, file) {
  */
 function copyFile(sorceDir, copyDirTo) {
     rimraf.sync(path.join(sorceDir, '.git'));
-    return fsp.copy(sorceDir, copyDirTo);
+    return new Promise((resolve, reject) => {
+        fsp.copy(sorceDir, copyDirTo, (err) => {
+            if (err) {
+                reject({
+                    error: err,
+                    text: '复制模板文件失败：模板文件夹下没有找到模版'
+                });
+                return;
+            }
+            resolve();
+        });
+    });
 }
 
 /**
@@ -140,7 +155,10 @@ function configFileWrite(dir, writeInInfo, fileName) {
             function (err) {
                 if (err) {
                     console.log('写入文件失败');
-                    reject(err);
+                    reject({
+                        error: err,
+                        text: '写入项目信息文件失败'
+                    });
                     return;
                 }
                 resolve();

@@ -33,7 +33,7 @@ cnpm install cyy-cli -g
 cyy-cli
 ```
 
-注：默认模版仓库里面是随便填写的仓库，您可以先执行 cyy-cli download 下载默认模版仓库，修改成你要上传的模版仓库配置再 cyy-cli upload xxx.json 上传
+#### 注：默认模版仓库里面是随便填写的仓库，您可以先执行 cyy-cli download 下载默认模版仓库，修改成你要上传的模版仓库配置再 cyy-cli upload xxx.json 上传替换
 
 上传模版（必须是 json 格式文件）
 
@@ -73,10 +73,10 @@ cyy-cli --help
 字段说明：
 
 ```javascript
-"message"   //  必填，提示
+"message"   //  必填，单选/输入项的操作提示
 "type"      //  必填，单选项内容，list 为单选项，input 为输入项
 "name"      //  必填，唯一值，用于模版层级识别 
-"text"      //  单选项显示的文字
+"text"      //  单选项显示的选项文字
 "child"     //  非必填，如果此层下面没有选项了，可不填该属性
 ```
 
