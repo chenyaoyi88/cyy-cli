@@ -33,7 +33,7 @@ cnpm install cyy-cli -g
 cyy-cli
 ```
 
-#### 注：默认模版仓库里面是随便填写的仓库，您可以先执行 cyy-cli download 下载默认模版仓库，修改成你要上传的模版仓库配置再 cyy-cli upload xxx.json 上传替换
+#### 注：默认模版仓库里面是随便填写的 github 仓库，国内克隆速度比较慢，建议您重新上传模版仓库配置文件里填写局域网或者国内的代码托管平台仓库。
 
 上传模版（必须是 json 格式文件）
 
@@ -70,16 +70,6 @@ cyy-cli --help
 
 #### repo.config.json 文件说明
 
-字段说明：
-
-```javascript
-"message"   //  必填，单选/输入项的操作提示
-"type"      //  必填，单选项内容，list 为单选项，input 为输入项
-"name"      //  必填，唯一值，用于模版层级识别 
-"text"      //  单选项显示的选项文字
-"child"     //  非必填，如果此层下面没有选项了，可不填该属性
-```
-
 repo.config.json 默认配置文件结构说明
 
 ```bash
@@ -100,14 +90,24 @@ repo.config.json 默认配置文件结构说明
 │   └──  活动           
 │         ├── >普通    
 │         └──  抽奖    
-├── 项目名                       # 输入项    
-├── 开发人员                     # 输入项   
-├── 上线时间-年                  # 输入项   
-├── 上线时间-月                  # 输入项   
-└── 上线时间-日                  # 输入项                          
+├── 项目名                       # 必填输入项    
+├── 开发人员                     # 必填输入项   
+├── 上线时间-年                  # 必填输入项   
+├── 上线时间-月                  # 必填输入项   
+└── 上线时间-日                  # 必填输入项                          
 ```
 
-repo.config.json 默认参考配置文件
+repo.config.json 默认参考配置文件，可使用 cyy-cli download 命令把这个配置文件下载下来修改成你想要的结构
+
+字段说明：
+
+```json
+"message"   //  必填，单选/输入项的操作提示
+"type"      //  必填，单选项内容，list 为单选项，input 为输入项
+"name"      //  必填，唯一值，用于模版层级识别 
+"text"      //  单选项显示的选项文字
+"child"     //  非必填，如果此层下面没有子选项了，可不填该属性
+```
 
 ```json
 [{
@@ -237,4 +237,23 @@ repo.config.json 默认参考配置文件
 #### 操作如下图
 
 
+生成项目模版操作流程
+
 ![操作流程](pic/cyy-cli.gif)
+
+cli输入时候填写的项目信息
+
+![项目信息](pic/cyy-cli-info.gif)
+
+ ```json
+{
+    "appName": "cyy-test",
+    "author": "cyy",
+    "onlineYear": "2018",
+    "onlineMonth": "12",
+    "onlineDate": "01",
+    "createYear": "2018",
+    "createMonth": "02",
+    "createDate": "14"
+}
+ ```
