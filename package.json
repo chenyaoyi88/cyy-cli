@@ -4,10 +4,12 @@
   "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
-    "start": "node bin/index.js"
+    "start": "node bin/index.js",
+    "preview:build": "node build/index.js",
+    "build": "babel bin -d build"
   },
   "bin": {
-    "cyy-cli": "bin/index.js"
+    "cyy-cli": "build/index.js"
   },
   "author": "cyy",
   "repository": {
@@ -28,5 +30,9 @@
     "request": "^2.81.0",
     "rimraf": "^2.6.2",
     "shelljs": "^0.7.8"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
   }
 }
