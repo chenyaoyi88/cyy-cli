@@ -1,6 +1,6 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "babel bin -d build"
   },
   "bin": {
-    "cyy-cli": "build/index.js"
+    "cyy-cli": "bin/index.js"
   },
   "author": "cyy",
   "repository": {
