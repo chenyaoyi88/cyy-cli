@@ -1,6 +1,6 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1"
   }
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require("babel-polyfill");
+
 const path = require('path');
 const exec = require('child_process').exec;
 // 交互式命令的（https://www.npmjs.com/package/inquirer）
@@ -15,13 +17,14 @@ const ora = require('ora');
 // 文件处理流程
 const flow = require('./index.flow');
 // 仓库配置文件
-const repoConfig = require('./../repo/repo.config.json');
+const repoConfig = require('./../repo/use/repo.config.json');
 // 整理仓库配置文件数据
 const resetUserData = flow.resetUserData(repoConfig);
 // 将 repo.config.json 的数据转化成 inquirer 所需的格式
 const installData = flow.userDataToinquirerData(resetUserData);
 // 根目录
-const rootPath = __dirname.replace(/(bin)|(lib)/, '');
+// const rootPath = __dirname.replace(/(bin)|(lib)/, '');
+const rootPath = path.resolve(__dirname, '../');
 // 模板目录
 const templateDir = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
@@ -48,9 +51,9 @@ if (process.argv.length <= 2) {
   // 输入 cyy-cli 有其他参数，获取并处理
 
   // 默认的配置文件
-  const repoConfigSource = path.join(rootPath, 'bin', 'repo.config.json');
+  const repoConfigSource = path.join(rootPath, 'repo', 'backup', 'repo.config.json');
   // 读取的配置文件
-  const repoConfigLoad = path.join(rootPath, 'repo', 'repo.config.json');
+  const repoConfigLoad = path.join(rootPath, 'repo', 'use', 'repo.config.json');
 
   program.version(packageConfig.version)
   program

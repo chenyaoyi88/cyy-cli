@@ -3,6 +3,8 @@
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
+require("babel-polyfill");
+
 var path = require('path');
 var exec = require('child_process').exec;
 // 交互式命令的（https://www.npmjs.com/package/inquirer）
@@ -18,13 +20,14 @@ var ora = require('ora');
 // 文件处理流程
 var flow = require('./index.flow');
 // 仓库配置文件
-var repoConfig = require('./../repo/repo.config.json');
+var repoConfig = require('./../repo/use/repo.config.json');
 // 整理仓库配置文件数据
 var resetUserData = flow.resetUserData(repoConfig);
 // 将 repo.config.json 的数据转化成 inquirer 所需的格式
 var installData = flow.userDataToinquirerData(resetUserData);
 // 根目录
-var rootPath = __dirname.replace(/(bin)|(lib)/, '');
+// const rootPath = __dirname.replace(/(bin)|(lib)/, '');
+var rootPath = path.resolve(__dirname, '../');
 // 模板目录
 var templateDir = path.join(rootPath, 'template');
 // 当前Node.js进程执行时的工作目录
@@ -49,9 +52,9 @@ if (process.argv.length <= 2) {
   // 输入 cyy-cli 有其他参数，获取并处理
 
   // 默认的配置文件
-  var repoConfigSource = path.join(rootPath, 'bin', 'repo.config.json');
+  var repoConfigSource = path.join(rootPath, 'repo', 'backup', 'repo.config.json');
   // 读取的配置文件
-  var repoConfigLoad = path.join(rootPath, 'repo', 'repo.config.json');
+  var repoConfigLoad = path.join(rootPath, 'repo', 'use', 'repo.config.json');
 
   program.version(packageConfig.version);
   program.command('upload <repo.config.json>').description('上传你的仓库模版 *.json 文件').action(function (file) {
