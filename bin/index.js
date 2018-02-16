@@ -24,11 +24,15 @@ const installData = flow.userDataToinquirerData(resetUserData.data);
 // const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const rootPath = path.resolve(__dirname, '../');
 // 模板目录
-const templateDir = path.join(rootPath, 'template');
+const templateDir = path.join(rootPath, 'template', 'use');
+// 模板目录
+const templateDirBackup = path.join(rootPath, 'template', 'backup');
 // 当前Node.js进程执行时的工作目录
 const currentDir = process.cwd();
 const utils = require('./utils');
 const packageConfig = require('./../package.json');
+// 项目信息文件名
+const configInfo_json = 'config.info.json';
 
 if (process.argv.length <= 2) {
   // 只输入 cyy-cli 没有其他参数
@@ -69,30 +73,19 @@ if (process.argv.length <= 2) {
       flow.copyConfigFile(uploadRepoFile, repoConfigLoad, '上传配置模版文件');
     });
 
-  // program
-  //   .command('download')
-  //   .description('下载默认仓库模版 repo.config.json 文件')
-  //   .action(function () {
-  //     // 仓库配置文件
-  //     const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
-  //     // 下载配置文件模版到当前Node.js进程执行时的工作目录
-  //     flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
-  //   });
-
   program
     .command('download <downloadType>')
     .description('repo/temp：下载默认仓库模版文件/所有模板到临时文件夹')
     .action(function (downloadType) {
       switch (downloadType) {
         case 'repo':
-          console.log('下载配置文件');
           // 仓库配置文件
           const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
           // 下载配置文件模版到当前Node.js进程执行时的工作目录
           flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
           break;
         case 'temp':
-          console.log('下载所有模版文件');
+          flow.cloneAllRepoTemplate(templateDirBackup, resetUserData.aRepoUrls);
           break;
       }
     });
@@ -122,6 +115,8 @@ function createTemplate(info, isOffline) {
   const templateInfo = flow.findResult(resetUserData.data, info);
   // 模板位置
   const sorceDir = path.join(templateDir, templateInfo.rank);
+  // 模板位置
+  const sorceDirBackup = path.join(templateDirBackup, templateInfo.rank);
   // 目标位置
   const copyDirTo = path.join(currentDir, info.appName);
   // 选中的仓库地址
@@ -132,7 +127,7 @@ function createTemplate(info, isOffline) {
   console.log(' ');
 
   if (!isOffline) {
-    // 创建模版
+    // 创建模版（正常网络状态下）
     (async function () {
       let spinner = null;
       try {
@@ -140,34 +135,41 @@ function createTemplate(info, isOffline) {
         await flow.deleteFile(sorceDir);
         spinner.succeed(chalk.green('删除旧模板成功'));
         spinner = ora('使用 git clone 获取最新项目模板... ').start();
-        await flow.cloneFileFromGit(repoDir, sorceDir);
+        await flow.cloneFileFromGit(repoDir, sorceDir, sorceDirBackup);
         spinner.succeed(chalk.green('获取新模板成功'));
         spinner = ora('复制模版到您当前目录下... ').start();
         await flow.copyFile(sorceDir, copyDirTo);
         spinner.succeed(chalk.green('复制新模板成功'));
-        await flow.setConfigFile(copyDirTo, inputInfo);
+        await flow.setConfigFile(copyDirTo, inputInfo, configInfo_json);
         spinner.succeed(chalk.green('项目信息写入成功'));
         process.exit(0);
         console.log(' ');
       } catch (err) {
-        spinner.fail(`${err.text}\n\n${err.error}`);
+        // // todo：克隆失败可从备份文件中获取模版
+        // if (err.code === 'cloneFileFromGit') {
+
+        // } else {
+        //   spinner.fail(`${err.msg}\n\n${err.error}`);
+        //   process.exit(1);
+        // }
+        spinner.fail(`${err.msg}\n\n${err.error}`);
         process.exit(1);
       }
     })();
   } else {
-    // 创建模版
+    // 创建模版（无网络状态下）
     (async function () {
       let spinner = null;
       try {
-        spinner = ora('复制模版到您当前目录下... ').start();
-        await flow.copyFile(sorceDir, copyDirTo);
+        await flow.copyFile(sorceDirBackup, copyDirTo, true);
+        spinner = ora('复制备份模版到您当前目录下... ').start();
         spinner.succeed(chalk.green('复制新模板成功'));
-        await flow.setConfigFile(copyDirTo, inputInfo);
+        await flow.setConfigFile(copyDirTo, inputInfo, configInfo_json);
         spinner.succeed(chalk.green('项目信息写入成功'));
         process.exit(0);
         console.log(' ');
       } catch (err) {
-        spinner.fail(`${err.text}\n\n${err.error}`);
+        spinner.fail(`${err.msg}\n\n${err.error}`);
         process.exit(1);
       }
     })();

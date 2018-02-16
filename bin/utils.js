@@ -30,6 +30,25 @@ function addZero(num) {
 }
 
 /**
+ * 时间戳格式化
+ * 
+ * @param {any} time 时间戳
+ * @param {any} symbol 年/月/日 相隔符号
+ * @returns 年.月.日 时:分:秒
+ */
+function formatDate(time, symbol) {
+    const timeSymbol = symbol || '.';
+    if (time) {
+        const newTime = typeof time === 'number' ? time : parseInt(time);
+        const date = new Date(newTime);
+        return date.getFullYear() + timeSymbol + addZero(date.getMonth() + 1) + timeSymbol + addZero(date.getDate()) +
+            ' ' + addZero(date.getHours()) + ':' + addZero(date.getMinutes()) + ':' + addZero(date.getSeconds());
+    } else {
+        return '----.--.-- --:--:--';
+    }
+}
+
+/**
  * 获取文件类型
  * 
  * @param {any} file 文件
@@ -46,4 +65,5 @@ function getFileType(file) {
 
 exports.replaceHtml = replaceHtml;
 exports.addZero = addZero;
+exports.formatDate = formatDate;
 exports.getFileType = getFileType;

@@ -69,7 +69,8 @@ function deleteFile(file) {
             if (err) {
                 reject({
                     error: err,
-                    text: '删除模版失败'
+                    msg: '删除模版失败',
+                    code: 'deleteFile'
                 });
                 return;
             }
@@ -83,19 +84,23 @@ function deleteFile(file) {
  * 
  * @param {any} repo 仓库地址
  * @param {any} file 克隆出来的文件名
+ * @param {any} filebackup 克隆出来的文件名备份
  * @returns 
  */
-function cloneFileFromGit(repo, file) {
+function cloneFileFromGit(repo, file, filebackup) {
     return new Promise((resolve, reject) => {
         gitClone(repo, file, function (err) {
             if (err) {
                 reject({
                     error: err,
-                    text: 'git clone失败'
+                    msg: 'git clone失败',
+                    code: 'cloneFileFromGit'
                 });
                 return;
             }
             resolve();
+            // 每次克隆成功备份多一份最新的
+            fsp.copy(file, filebackup);
         });
     });
 }
@@ -103,19 +108,18 @@ function cloneFileFromGit(repo, file) {
 function cloneAllRepoTemplate(templateDir, aRepoUrls) {
     const len = aRepoUrls.length;
     let count = 0;
-    console.log(len);
-    console.log(count);
     const clone = function (count) {
-        console.log(aRepoUrls[count].repoUrl);
-        console.log(path.join(templateDir, aRepoUrls[count].rank));
-        gitClone(aRepoUrls[count].repoUrl, path.join(templateDir, aRepoUrls[count].rank), function (err) {
+        rimraf.sync(path.join(templateDir, aRepoUrls[count].rank));
+        const spinner = ora(chalk.gray(`正在下载 ${aRepoUrls[count].text} 模版...`)).start();
+        gitClone(aRepoUrls[count].url, path.join(templateDir, aRepoUrls[count].rank), function (err) {
             if (err) {
                 console.log(err);
                 return;
             }
+            spinner.succeed(aRepoUrls[count].text + chalk.green(` 模板克隆备份成功`));
             count++;
             if (count === len) {
-                console.log('clone 全部仓库完成');
+                spinner.succeed(chalk.green(`全部模板备份完成`));
                 return;
             }
             clone(count);
@@ -131,43 +135,37 @@ function cloneAllRepoTemplate(templateDir, aRepoUrls) {
  * @param {any} copyDirTo 复制到的位置
  * @returns 
  */
-function copyFile(sorceDir, copyDirTo) {
+function copyFile(sorceDir, copyDirTo, isBackupFile) {
     rimraf.sync(path.join(sorceDir, '.git'));
     return new Promise((resolve, reject) => {
         fsp.copy(sorceDir, copyDirTo, (err) => {
             if (err) {
                 reject({
                     error: err,
-                    text: '复制模板文件失败：模板文件夹下没有找到模版'
+                    msg: '复制模板文件失败：模板文件夹下没有找到模版',
+                    code: 'copyFile'
                 });
                 return;
             }
             resolve();
         });
+        if (isBackupFile) {
+            const stats = fsp.statSync(sorceDir);
+            console.log(chalk.yellow('该模版最近一次备份时间：') + `${utils.formatDate(new Date(stats.birthtime).getTime())}`, '\n');
+        }
     });
 }
 
 /**
- * 设置 config.cyycli.json 项目信息文件
+ * 设置 config.info.json 项目信息文件
  * 
- * @param {any} targetDir 目标文件
- * @param {any} writeInInfo 写入信息
- * @param {any} configFile config.cyycli.json 文件名
+ * @param {string} targetDir 目标文件
+ * @param {Object} writeInInfo 写入信息
+ * @param {string} configInfo_json config.info.json 文件名
  */
-function setConfigFile(targetDir, writeInInfo) {
-    return configFileWrite(targetDir, writeInInfo, configInfo_json);
-}
-
-/**
- * 写入 config.json
- *
- * @param {any} dir 目标文件夹
- * @param {any} writeInInfo 写入信息
- * @param {any} fileName 写入的文件名
- */
-function configFileWrite(dir, writeInInfo, fileName) {
+function setConfigFile(targetDir, writeInInfo, configInfo_json) {
     return new Promise((resolve, reject) => {
-        const configFile = path.join(dir, fileName);
+        const configFile = path.join(targetDir, configInfo_json);
         const oDate = new Date();
         const oCreateDateInfo = {
             createYear: String(oDate.getFullYear()),
@@ -181,7 +179,8 @@ function configFileWrite(dir, writeInInfo, fileName) {
                     console.log('写入文件失败');
                     reject({
                         error: err,
-                        text: '写入项目信息文件失败'
+                        msg: '写入项目信息文件失败',
+                        code: 'setConfigFile'
                     });
                     return;
                 }
@@ -209,11 +208,7 @@ function resetUserData(arr) {
             } else {
                 arr[i].rank = options.rank + '_' + arr[i].name;
                 if (arr[i].url) {
-                    const json = {
-                        repoUrl: arr[i].url,
-                        rank: arr[i].rank
-                    };
-                    aRepoUrls.push(json);
+                    aRepoUrls.push(arr[i]);
                 }
             }
             if (arr[i].child && arr[i].child.length) {
