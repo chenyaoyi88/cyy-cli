@@ -50,13 +50,19 @@ cyy-cli upload xxx.json
 下载参考模版（下载下来参考，改成你的配置然后重新上传）
 
 ```bash
-cyy-cli download
+cyy-cli download repo
+```
+
+下载模版配置文件里面所有模版（可提前全部下载下载，当网络不好的时候可以直接拿下载好的本地项目模版）
+
+```bash
+cyy-cli download temp
 ```
 
 重置成默认的参考模版（当你上传的配置文件格式错误导致无法使用的时候使用）
 
 ```bash
-cyy-cli reset
+cyy-cli reset repo
 ```
 
 查看当前安装的 cyy-cli 版本
