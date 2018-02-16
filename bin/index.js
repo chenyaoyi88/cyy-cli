@@ -19,7 +19,7 @@ const repoConfig = require('./../repo/use/repo.config.json');
 // 整理仓库配置文件数据
 const resetUserData = flow.resetUserData(repoConfig);
 // 将 repo.config.json 的数据转化成 inquirer 所需的格式
-const installData = flow.userDataToinquirerData(resetUserData);
+const installData = flow.userDataToinquirerData(resetUserData.data);
 // 根目录
 // const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const rootPath = path.resolve(__dirname, '../');
@@ -119,7 +119,7 @@ if (process.argv.length <= 2) {
  */
 function createTemplate(info, isOffline) {
   // 模板信息
-  const templateInfo = flow.findResult(resetUserData, info);
+  const templateInfo = flow.findResult(resetUserData.data, info);
   // 模板位置
   const sorceDir = path.join(templateDir, templateInfo.rank);
   // 目标位置
