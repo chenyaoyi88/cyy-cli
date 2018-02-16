@@ -1,6 +1,6 @@
 {
   "name": "cyy-cli",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "cyy-cli",
   "main": "index.js",
   "scripts": {
@@ -28,10 +28,5 @@
     "request": "^2.81.0",
     "rimraf": "^2.6.2",
     "shelljs": "^0.7.8"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "transform-runtime": "^0.0.0"
   }
 }

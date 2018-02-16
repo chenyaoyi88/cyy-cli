@@ -69,22 +69,44 @@ if (process.argv.length <= 2) {
       flow.copyConfigFile(uploadRepoFile, repoConfigLoad, '上传配置模版文件');
     });
 
+  // program
+  //   .command('download')
+  //   .description('下载默认仓库模版 repo.config.json 文件')
+  //   .action(function () {
+  //     // 仓库配置文件
+  //     const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
+  //     // 下载配置文件模版到当前Node.js进程执行时的工作目录
+  //     flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
+  //   });
+
   program
-    .command('download')
-    .description('下载默认仓库模版 repo.config.json 文件')
-    .action(function () {
-      // 仓库配置文件
-      const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
-      // 下载配置文件模版到当前Node.js进程执行时的工作目录
-      flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
+    .command('download <downloadType>')
+    .description('repo/temp：下载默认仓库模版文件/所有模板到临时文件夹')
+    .action(function (downloadType) {
+      switch (downloadType) {
+        case 'repo':
+          console.log('下载配置文件');
+          // 仓库配置文件
+          const repoConfigCopyTo = path.join(currentDir, 'repo.config.json');
+          // 下载配置文件模版到当前Node.js进程执行时的工作目录
+          flow.copyConfigFile(repoConfigSource, repoConfigCopyTo, '下载配置模版文件');
+          break;
+        case 'temp':
+          console.log('下载所有模版文件');
+          break;
+      }
     });
 
   program
-    .command('reset')
+    .command('reset <resetType>')
     .description('重置仓库模版 repo.config.json 文件')
-    .action(function () {
-      // 将当前读取的配置文件重置到初始模版状态
-      flow.copyConfigFile(repoConfigSource, repoConfigLoad, '重置配置模版文件');
+    .action(function (resetType) {
+      switch (resetType) {
+        case 'repo':
+          // 将当前读取的配置文件重置到初始模版状态
+          flow.copyConfigFile(repoConfigSource, repoConfigLoad, '重置配置模版文件');
+          break;
+      }
     });
 
   program.parse(process.argv);
