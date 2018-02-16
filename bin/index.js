@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-require("babel-polyfill");
-
 const path = require('path');
 const exec = require('child_process').exec;
 // 交互式命令的（https://www.npmjs.com/package/inquirer）
