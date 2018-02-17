@@ -21,7 +21,6 @@ const resetUserData = flow.resetUserData(repoConfig);
 // 将 repo.config.json 的数据转化成 inquirer 所需的格式
 const installData = flow.userDataToinquirerData(resetUserData.data);
 // 根目录
-// const rootPath = __dirname.replace(/(bin)|(lib)/, '');
 const rootPath = path.resolve(__dirname, '../');
 // 模板目录
 const templateDir = path.join(rootPath, 'template', 'use');
@@ -66,11 +65,25 @@ if (process.argv.length <= 2) {
         console.log('上传的文件名必须是 json 格式');
         process.exit(1);
       }
-
       // 上传的配置文件位置
       const uploadRepoFile = path.join(currentDir, file);
       // 替换原本的配置文件
-      flow.copyConfigFile(uploadRepoFile, repoConfigLoad, '上传配置模版文件');
+      flow.copyConfigFile(uploadRepoFile, repoConfigLoad, '上传配置模版文件', function () {
+        console.log(' ');
+        inquirer.prompt([{
+          type: 'confirm',
+          name: 'backup',
+          message: chalk.yellow('您刚上传了新的模板配置文件，是需要备份一份在本地？'),
+        }]).then(function (res) {
+          if (!res.backup) {
+            process.exit(0);
+          }
+          console.log(' ');
+          // 如果需要，备份一份
+          flow.cloneAllRepoTemplate(templateDirBackup, resetUserData.aRepoUrls);
+        });
+      });
+
     });
 
   program
@@ -124,12 +137,29 @@ function createTemplate(info, isOffline) {
   // 输入项
   const inputInfo = flow.findInput(installData.question, info);
 
+  let spinner = null;
+
+  // 离线状态处理逻辑
+  const offLineHandle = async function () {
+    try {
+      await flow.copyFile(sorceDirBackup, copyDirTo, true);
+      spinner = ora('复制备份模版到您当前目录下... ').start();
+      spinner.succeed(chalk.green('复制新模板成功'));
+      await flow.setConfigFile(copyDirTo, inputInfo, configInfo_json);
+      spinner.succeed(chalk.green('项目信息写入成功'));
+      process.exit(0);
+      console.log(' ');
+    } catch (err) {
+      spinner.fail(`${err.msg}\n\n${err.error}`);
+      process.exit(1);
+    }
+  };
+
   console.log(' ');
 
   if (!isOffline) {
     // 创建模版（正常网络状态下）
     (async function () {
-      let spinner = null;
       try {
         spinner = ora('正在生成项目模板... ').start();
         await flow.deleteFile(sorceDir);
@@ -145,34 +175,18 @@ function createTemplate(info, isOffline) {
         process.exit(0);
         console.log(' ');
       } catch (err) {
-        // // todo：克隆失败可从备份文件中获取模版
-        // if (err.code === 'cloneFileFromGit') {
-
-        // } else {
-        //   spinner.fail(`${err.msg}\n\n${err.error}`);
-        //   process.exit(1);
-        // }
-        spinner.fail(`${err.msg}\n\n${err.error}`);
-        process.exit(1);
+        // 克隆失败可从备份文件中获取旧的模版
+        if (err.code === 'cloneFileFromGit') {
+          offLineHandle();
+        } else {
+          spinner.fail(`${err.msg}\n\n${err.error}`);
+          process.exit(1);
+        }
       }
     })();
   } else {
     // 创建模版（无网络状态下）
-    (async function () {
-      let spinner = null;
-      try {
-        await flow.copyFile(sorceDirBackup, copyDirTo, true);
-        spinner = ora('复制备份模版到您当前目录下... ').start();
-        spinner.succeed(chalk.green('复制新模板成功'));
-        await flow.setConfigFile(copyDirTo, inputInfo, configInfo_json);
-        spinner.succeed(chalk.green('项目信息写入成功'));
-        process.exit(0);
-        console.log(' ');
-      } catch (err) {
-        spinner.fail(`${err.msg}\n\n${err.error}`);
-        process.exit(1);
-      }
-    })();
+    offLineHandle();
   }
 
 }

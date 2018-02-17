@@ -105,6 +105,12 @@ function cloneFileFromGit(repo, file, filebackup) {
     });
 }
 
+/**
+ * 克隆所有项目模版在安装目录
+ * 
+ * @param {any} templateDir 模版文件夹
+ * @param {any} aRepoUrls 模版集合的数组
+ */
 function cloneAllRepoTemplate(templateDir, aRepoUrls) {
     const len = aRepoUrls.length;
     let count = 0;
@@ -347,12 +353,12 @@ function findInput(list, json) {
  * @param {any} repoConfigCopyTo 输入位置
  * @param {any} msg 提示信息
  */
-function copyConfigFile(repoConfigSource, repoConfigCopyTo, msg) {
+function copyConfigFile(repoConfigSource, repoConfigCopyTo, msg, cb) {
     let spinner = ora(msg + '中... ').start();
     fsp.copy(repoConfigSource, repoConfigCopyTo)
         .then(() => {
             spinner.succeed(chalk.green(msg + '成功'));
-            process.exit(0);
+            cb ? cb() : process.exit(0);
         })
         .catch(err => {
             console.error(err);
